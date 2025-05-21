@@ -1,0 +1,104 @@
+import { useEffect, useLayoutEffect, useState } from "react";
+import { EditorInstance } from "../../editor/editor";
+import { useEditorStore } from "../../stores/editor-store";
+import { StatusBar } from "./StatusBar";
+import { useNoteStore } from "../../stores/note-store";
+import { useAppStore } from "../../stores/app-store";
+import { toggleCopilotExtension } from "../../editor/extensions/ai";
+import { updateEditorFont, updateEditorTheme } from "@/editor/theme";
+import { toggleVIMExtension } from "@/editor/extensions/vim";
+
+function useEditor({ fileName }: { fileName: string }) {
+  const [container, setContainer] = useState<HTMLElement | null>(null);
+
+  const editor = useEditorStore((state) => state.editors[fileName]);
+  const addEditor = useEditorStore((state) => state.addEditor);
+  const updateCurrentNote = useNoteStore((state) => state.updateCurrentNote);
+
+  const isAIEnabled = useAppStore((state) => state.userSettings.ai.enabled);
+  const isVIMEnabled = useAppStore((state) => state.userSettings.vim);
+  const font = useAppStore((state) => state.userSettings.font);
+  const theme = useAppStore((state) => state.userSettings.theme);
+
+  useEffect(() => {
+    if (!editor) return;
+
+    updateEditorTheme(editor.view, theme);
+    updateEditorFont(editor.view, font);
+  }, [editor, font, theme]);
+
+  // FIXME, this is fairly hacky.
+  useEffect(() => {
+    if (!editor) return;
+
+    toggleCopilotExtension(editor.view, isAIEnabled);
+    toggleVIMExtension(editor.view, isVIMEnabled);
+  }, [isAIEnabled, isVIMEnabled, editor]);
+
+  useLayoutEffect(() => {
+    // FIXME I don't think we should be destroying the Editor view just because the global state changed a little.
+    // This will likely come back to bite us once we get more complex with the editor.
+    if (container && (!editor || editor.view.destroyed)) {
+      addEditor(
+        fileName,
+        new EditorInstance({
+          path: fileName,
+          element: container,
+          actions: { updateCurrentNote },
+          isAIEnabled,
+          isVIMEnabled,
+          initialTheme: {
+            theme,
+            ...font
+          }
+        })
+      );
+    }
+
+    return () => {
+      if (editor) {
+        console.log("destroying editor");
+        editor.view.destroy();
+      }
+    };
+  }, [
+    editor,
+    addEditor,
+    fileName,
+    container,
+    updateCurrentNote,
+    isAIEnabled,
+    theme,
+    font,
+    isVIMEnabled
+  ]);
+
+  return { setContainer, editor };
+}
+
+export function Editor({ fileName }: { fileName: string }) {
+  const { setContainer, editor } = useEditor({ fileName });
+
+  const language = useNoteStore((state) => state.currentLanguage);
+  const isAutoDetect = useNoteStore((state) => state.currentLanguageAuto);
+
+  function setLanguage(language: string) {
+    if (language === "auto") {
+      editor.setLanguage(null, true);
+    } else {
+      editor.setLanguage(language, false);
+    }
+
+    editor.focus();
+  }
+
+  return (
+    <div className="flex flex-col overflow-hidden h-full">
+      <div className="flex-1 overflow-auto">
+        <div ref={setContainer} className="h-full" tabIndex={0} />
+      </div>
+
+      <StatusBar language={language} onLangChange={setLanguage} isAutoDetect={isAutoDetect} />
+    </div>
+  );
+}
