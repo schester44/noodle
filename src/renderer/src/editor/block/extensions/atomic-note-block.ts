@@ -6,6 +6,9 @@ const decoration = Decoration.line({
   attributes: { class: "atomic-note-range" }
 });
 
+/**
+ * These atomic ranges prevent the cursor from moving into the delimiter line
+ */
 function atomicRanges(view: EditorView): RangeSet<Decoration> {
   const builder = new RangeSetBuilder<Decoration>();
 

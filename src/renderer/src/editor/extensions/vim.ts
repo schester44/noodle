@@ -27,9 +27,11 @@ export function setupVimModeSync(view: EditorView) {
   if (!cm) return;
 
   cm.on("vim-mode-change", (e: { mode: string }) => {
-    view.dispatch({
-      annotations: vimModeAnnotation.of(e.mode)
-    });
+    setTimeout(() => {
+      view.dispatch({
+        annotations: vimModeAnnotation.of(e.mode)
+      });
+    }, 0);
   });
 }
 

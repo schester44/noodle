@@ -14,6 +14,11 @@ export default defineConfig({
     }
   },
   preload: {
+    resolve: {
+      alias: {
+        "@common": resolve("src/common")
+      }
+    },
     plugins: [externalizeDepsPlugin()]
   },
   renderer: {

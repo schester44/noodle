@@ -4,27 +4,27 @@ import { Range, EditorState, RangeSet, StateField } from "@codemirror/state";
 import { NoteBlockStart } from "../widgets/NoteBlockStart";
 import { blockState } from "../state/block-state";
 
-export const noteBlockWidget = () => {
-  const decorate = (state: EditorState) => {
-    const widgets: Range<Decoration>[] = [];
+function decorate(state: EditorState) {
+  const widgets: Range<Decoration>[] = [];
 
-    state.field(blockState).forEach((block) => {
-      const delimiter = block.delimiter;
-      const deco = Decoration.replace({
-        widget: new NoteBlockStart(delimiter.from === 0 ? true : false),
-        inclusive: true,
-        block: true,
-        side: 0
-      });
-
-      widgets.push(
-        deco.range(delimiter.from === 0 ? delimiter.from : delimiter.from + 1, delimiter.to - 1)
-      );
+  state.field(blockState).forEach((block) => {
+    const delimiter = block.delimiter;
+    const deco = Decoration.replace({
+      widget: new NoteBlockStart(delimiter.from === 0 ? true : false),
+      inclusive: true,
+      block: true,
+      side: 0
     });
 
-    return widgets.length > 0 ? RangeSet.of(widgets) : Decoration.none;
-  };
+    widgets.push(
+      deco.range(delimiter.from === 0 ? delimiter.from : delimiter.from + 1, delimiter.to - 1)
+    );
+  });
 
+  return widgets.length > 0 ? RangeSet.of(widgets) : Decoration.none;
+}
+
+export const noteBlockWidget = () => {
   const noteBlockStartField = StateField.define({
     create(state) {
       return decorate(state);

@@ -8,9 +8,9 @@ export interface UserConfig {
   font: {
     fontFamily: string;
     fontSize: number;
-    fontWeight: string;
+    fontWeight: "normal" | "bold";
   };
-  theme: string;
+  theme: "dark" | "light" | "system";
   window: {
     alwaysOnTop: boolean;
   };

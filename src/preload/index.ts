@@ -1,14 +1,15 @@
 import { contextBridge, ipcRenderer } from "electron";
 import { electronAPI } from "@electron-toolkit/preload";
 import { getFonts } from "font-list";
-// Custom APIs for renderer
-const api = {
+import { IPC_CHANNELS } from "@common/constants";
+
+const api: typeof window.api = {
   getAppConfig: async () => {
-    return ipcRenderer.invoke("app:getConfig");
+    return ipcRenderer.invoke(IPC_CHANNELS.GET_APP_CONFIG);
   },
   ai: {
     async getResponse(opts: { before: string; after: string; language: string }) {
-      return ipcRenderer.invoke("ai:getResponse", opts);
+      return ipcRenderer.invoke(IPC_CHANNELS.GET_AI_RESPONSE, opts);
     }
   },
   getFonts: async () => {
@@ -18,31 +19,28 @@ const api = {
   },
   settings: {
     async loadConfig() {
-      return ipcRenderer.invoke("settings:loadConfig");
+      return ipcRenderer.invoke(IPC_CHANNELS.LOAD_SETTINGS);
     },
-    saveUserConfig(config: { openAIAPIKey: string }) {
-      return ipcRenderer.invoke("settings:saveUserConfig", config);
+    saveUserConfig(config) {
+      return ipcRenderer.invoke(IPC_CHANNELS.SAVE_USER_SETTINGS, config);
     }
   },
   buffer: {
     async new() {
-      return await ipcRenderer.invoke("buffer:new");
+      return await ipcRenderer.invoke(IPC_CHANNELS.NEW_BUFFER);
     },
     async load(file: string) {
-      return await ipcRenderer.invoke("buffer:load", file);
+      return await ipcRenderer.invoke(IPC_CHANNELS.LOAD_BUFFER, file);
     },
     async save(file: string, content: string) {
-      return await ipcRenderer.invoke("buffer:save", { file, content });
+      return await ipcRenderer.invoke(IPC_CHANNELS.SAVE_BUFFER, { file, content });
     },
     async getAll() {
-      return await ipcRenderer.invoke("buffer:getAll");
+      return await ipcRenderer.invoke(IPC_CHANNELS.GET_ALL_BUFFERS);
     }
   }
 };
 
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled, otherwise
-// just add to the DOM global.
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld("electron", electronAPI);
@@ -53,6 +51,5 @@ if (process.contextIsolated) {
 } else {
   // @ts-ignore (define in dts)
   window.electron = electronAPI;
-  // @ts-ignore (define in dts)
   window.api = api;
 }

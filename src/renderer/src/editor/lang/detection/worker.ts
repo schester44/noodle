@@ -27,7 +27,6 @@ self.onmessage = (event: MessageEvent) => {
   const content = event.data.content;
 
   const trimmedContent = content.trim();
-  console.log("🪵 trimmedContent", trimmedContent);
 
   if (
     (trimmedContent.startsWith("{") && trimmedContent.endsWith("}")) ||

@@ -38,27 +38,34 @@ function useEditor({ fileName }: { fileName: string }) {
   useLayoutEffect(() => {
     // FIXME I don't think we should be destroying the Editor view just because the global state changed a little.
     // This will likely come back to bite us once we get more complex with the editor.
-    if (container && (!editor || editor.view.destroyed)) {
-      addEditor(
-        fileName,
-        new EditorInstance({
-          path: fileName,
-          element: container,
-          actions: { updateCurrentNote },
-          isAIEnabled,
-          isVIMEnabled,
-          initialTheme: {
-            theme,
-            ...font
-          }
-        })
-      );
+    // you can attach/detach the editor.view.dom to/from the container.. some issues wih selection state depending on note size
+    if (container) {
+      while (container.firstChild) {
+        container.removeChild(container.firstChild);
+      }
+      if (editor) {
+        container.appendChild(editor.view.dom);
+      } else {
+        addEditor(
+          fileName,
+          new EditorInstance({
+            path: fileName,
+            element: container,
+            actions: { updateCurrentNote },
+            isAIEnabled,
+            isVIMEnabled,
+            initialTheme: {
+              theme,
+              ...font
+            }
+          })
+        );
+      }
     }
 
     return () => {
-      if (editor) {
-        console.log("destroying editor");
-        editor.view.destroy();
+      if (editor?.view.dom) {
+        container?.removeChild(editor?.view.dom);
       }
     };
   }, [

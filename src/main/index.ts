@@ -7,6 +7,7 @@ import { store as userConfig } from "./store/user-config";
 import { getLibraryPath } from "./utils/get-library-path";
 import { nativeTheme } from "electron/main";
 import { store } from "./store/app-config";
+import { IPC_CHANNELS } from "@common/constants";
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
@@ -63,7 +64,7 @@ async function init() {
   let apiKey = userConfig.get("ai.apiKey");
   let aiModel = userConfig.get("ai.model");
 
-  ipcMain.handle("app:getConfig", async () => {
+  ipcMain.handle(IPC_CHANNELS.GET_APP_CONFIG, async () => {
     return {
       lastOpenedFile: store.get("lastOpenedFile")
     };
@@ -90,7 +91,7 @@ async function init() {
     }
   });
 
-  ipcMain.handle("settings:loadConfig", async () => {
+  ipcMain.handle(IPC_CHANNELS.LOAD_SETTINGS, async () => {
     return {
       userConfig: userConfig.store,
       appConfig: {
@@ -99,7 +100,7 @@ async function init() {
     };
   });
 
-  ipcMain.handle("settings:saveUserConfig", async (_, config: { openAIAPIKey: string }) => {
+  ipcMain.handle(IPC_CHANNELS.SAVE_USER_SETTINGS, async (_, config: { openAIAPIKey: string }) => {
     Object.keys(config).forEach((key) => {
       const value = config[key];
 
@@ -107,7 +108,7 @@ async function init() {
     });
   });
 
-  ipcMain.handle("ai:getResponse", async (_, { before, after, language }) => {
+  ipcMain.handle(IPC_CHANNELS.GET_AI_RESPONSE, async (_, { before, after, language }) => {
     const messages = [
       {
         role: "system",

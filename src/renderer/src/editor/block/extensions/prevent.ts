@@ -2,6 +2,8 @@ import { EditorSelection, EditorState, Transaction } from "@codemirror/state";
 import { editorEvent } from "../../annotation";
 import { firstBlockDelimiterSize } from "../block-parsing";
 import { blockState } from "../state/block-state";
+import { isInInsertMode, vimModeField } from "@/editor/extensions/vim";
+import { isIndexNode } from "mathjs";
 
 export const preventFirstBlockFromBeingDeleted = EditorState.changeFilter.of((tr) => {
   const protect: number[] = [];
@@ -35,6 +37,7 @@ export const preventSelectionBeforeFirstBlock = EditorState.transactionFilter.of
   if (!firstBlockDelimiterSize || tr.annotation(editorEvent)) {
     return tr;
   }
+  const blocks = tr.startState.field(blockState);
 
   let changed = false;
   const newRanges = tr.selection?.ranges.map((range) => {
@@ -51,6 +54,21 @@ export const preventSelectionBeforeFirstBlock = EditorState.transactionFilter.of
       changed = true;
     }
 
+    /**
+     * When a selection change occurs in normal mode and it enters a delimiter, we should move it outside of the delimiter.
+     * This occurs when deleeting a line
+     **/
+    if (!isIndexNode(tr.state)) {
+      blocks.forEach((block) => {
+        if (range.from > block.delimiter.from && range.from < block.delimiter.to) {
+          changed = true;
+
+          from = block.delimiter.to;
+          to = block.delimiter.to;
+        }
+      });
+    }
+
     return EditorSelection.range(from, to);
   });
 
@@ -59,4 +77,47 @@ export const preventSelectionBeforeFirstBlock = EditorState.transactionFilter.of
   }
 
   return tr;
+});
+
+export const preventDanglingDelimiter = EditorState.transactionFilter.of((tr) => {
+  if (!tr.docChanged || isInInsertMode(tr.startState)) {
+    return tr;
+  }
+
+  const blocks = tr.startState.field(blockState);
+  const changes: Array<{ from: number; to: number; insert: string }> = [];
+
+  tr.changes.iterChanges((fromA, toA) => {
+    const deletedText = tr.startState.doc.sliceString(fromA, toA);
+    const isDeletion = deletedText.length > 0;
+
+    if (!isDeletion) return;
+
+    blocks.forEach((block) => {
+      const isEnteringFromTop = toA > block.delimiter.from && toA < block.delimiter.to;
+      // if you're deleting from the top then you probably want to delete the first line of the next block
+      if (isEnteringFromTop) {
+        changes.push({
+          from: fromA,
+          to: block.delimiter.from,
+          insert: ""
+        });
+      }
+
+      const isDeletingFromInside = fromA > block.delimiter.from && fromA < block.delimiter.to;
+
+      if (isDeletingFromInside) {
+        changes.push({
+          from: block.content.from,
+          to: block.content.to,
+          insert: ""
+        });
+      }
+    });
+  });
+
+  if (!changes.length) return tr;
+
+  // returning just changes here because we want to completely overwrite the transaction
+  return { changes };
 });

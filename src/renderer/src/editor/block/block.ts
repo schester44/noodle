@@ -6,6 +6,7 @@ import { blockLineNumbers } from "./extensions/block-line-numbers";
 import { noteBlockWidget } from "./extensions/note-block-widget";
 import { blockState } from "./state/block-state";
 import {
+  preventDanglingDelimiter,
   preventFirstBlockFromBeingDeleted,
   preventSelectionBeforeFirstBlock
 } from "./extensions/prevent";
@@ -17,6 +18,7 @@ export const blockExtension = () => {
     blockLineNumbers,
     blockState,
     preventFirstBlockFromBeingDeleted,
+    preventDanglingDelimiter,
     preventSelectionBeforeFirstBlock,
     noteBlockWidget(),
     mathBlock,

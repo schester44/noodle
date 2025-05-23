@@ -4,17 +4,18 @@ import { join } from "path";
 import os from "node:os";
 import { ipcMain } from "electron";
 import { store } from "./store/app-config";
+import { IPC_CHANNELS, NOTE_BLOCK_DELIMITER } from "@common/constants";
 
 const DEFAULT_FILE_NAME = "noodle.txt";
 
 export const initialContent = (name: string) => `
 {"formatVersion":"1.0.0","name":"${name}"}
-∞∞∞markdown-a
+${NOTE_BLOCK_DELIMITER}markdown-a
 In Markdown blocks, lists with [x] and [ ] are rendered as checkboxes:
 
 - [x] Get the day started
 - [ ] Go to the gym
-∞∞∞math-a
+${NOTE_BLOCK_DELIMITER}math-a
 This is a Math block. Here, rows are evaluated as math expressions.
 
 radius = 5
@@ -26,7 +27,7 @@ It also supports some basic unit conversions, including currencies:
 13 inches in cm
 time = 3900 seconds to minutes
 time * 2
-∞∞∞markdown-a
+${NOTE_BLOCK_DELIMITER}markdown-a
 `;
 
 export class FileLibrary {
@@ -203,19 +204,22 @@ function formatDate(date: Date) {
 }
 
 export function setupFileLibraryEventListeners({ library }: { library: FileLibrary }) {
-  ipcMain.handle("buffer:load", async (_, file: string) => {
-    return await library.load(file);
-  });
-
-  ipcMain.handle("buffer:save", async (_, { file, content }: { file: string; content: string }) => {
-    return await library.save(file, content);
-  });
-
-  ipcMain.handle("buffer:new", async () => {
+  ipcMain.handle(IPC_CHANNELS.NEW_BUFFER, async () => {
     return await library.createNew();
   });
 
-  ipcMain.handle("buffer:getAll", async () => {
+  ipcMain.handle(IPC_CHANNELS.LOAD_BUFFER, async (_, file: string) => {
+    return await library.load(file);
+  });
+
+  ipcMain.handle(
+    IPC_CHANNELS.SAVE_BUFFER,
+    async (_, { file, content }: { file: string; content: string }) => {
+      return await library.save(file, content);
+    }
+  );
+
+  ipcMain.handle(IPC_CHANNELS.GET_ALL_BUFFERS, async () => {
     return await library.getAll();
   });
 }
