@@ -29,13 +29,12 @@ class CheckboxWidget extends WidgetType {
     input.className = "cm-checkbox";
 
     input.addEventListener("click", (event) => {
-      console.log("🪵 event", event);
-      const replacement = this.checked ? "[ ]" : "[x]";
+      const replacement = this.checked ? "- [ ]" : "- [x]";
 
       view.dispatch({
         changes: {
           from: this.pos,
-          to: this.pos + 3,
+          to: this.pos + 5,
           insert: replacement
         }
       });
@@ -47,8 +46,9 @@ class CheckboxWidget extends WidgetType {
     return input;
   }
 
-  ignoreEvent() {
-    return false;
+  ignoreEvent(event: Event) {
+    // Ignore mouse events to prevent selection/focus changes
+    return event.type === "mousedown" || event.type === "click";
   }
 }
 
