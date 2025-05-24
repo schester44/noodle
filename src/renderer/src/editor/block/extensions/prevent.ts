@@ -2,7 +2,7 @@ import { EditorSelection, EditorState, Transaction } from "@codemirror/state";
 import { editorEvent } from "../../annotation";
 import { firstBlockDelimiterSize } from "../block-parsing";
 import { blockState } from "../state/block-state";
-import { isInInsertMode, vimModeField } from "@/editor/extensions/vim";
+import { isInInsertMode } from "@/editor/extensions/vim";
 import { isIndexNode } from "mathjs";
 
 export const preventFirstBlockFromBeingDeleted = EditorState.changeFilter.of((tr) => {

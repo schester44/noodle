@@ -32,7 +32,7 @@ function App(): React.JSX.Element {
 
   useEffect(() => {
     const unsub = tinykeys(window, {
-      "Meta+n": () => {
+      "Meta+p": () => {
         handleNewNote();
       }
     });

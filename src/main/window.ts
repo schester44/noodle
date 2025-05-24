@@ -1,7 +1,6 @@
 import { shell, BrowserWindow } from "electron";
 import { join } from "path";
 import { is } from "@electron-toolkit/utils";
-import icon from "../../resources/icon.png?asset";
 import { store as appConfig } from "./store/app-config";
 
 const FOCUSABLE_IN_DEV = false;
@@ -15,10 +14,13 @@ export function createWindow(): BrowserWindow {
     x: windowConfig.x,
     y: windowConfig.y,
     show: false,
-    frame: false,
+    type: "panel",
     titleBarStyle: "hiddenInset",
-    autoHideMenuBar: true,
-    ...(process.platform === "linux" ? { icon } : {}),
+    minimizable: false,
+    maximizable: false,
+    resizable: true,
+    fullscreenable: false,
+    fullscreen: false,
     webPreferences: {
       preload: join(__dirname, "../preload/index.js"),
       sandbox: false

@@ -43,23 +43,25 @@ function useEditor({ fileName }: { fileName: string }) {
       while (container.firstChild) {
         container.removeChild(container.firstChild);
       }
+
       if (editor) {
         container.appendChild(editor.view.dom);
+        editor.view.focus();
       } else {
-        addEditor(
-          fileName,
-          new EditorInstance({
-            path: fileName,
-            element: container,
-            actions: { updateCurrentNote },
-            isAIEnabled,
-            isVIMEnabled,
-            initialTheme: {
-              theme,
-              ...font
-            }
-          })
-        );
+        const editor = new EditorInstance({
+          path: fileName,
+          element: container,
+          actions: { updateCurrentNote },
+          isAIEnabled,
+          isVIMEnabled,
+          initialTheme: {
+            theme,
+            ...font
+          }
+        });
+
+        addEditor(fileName, editor);
+        editor.view.focus();
       }
     }
 
