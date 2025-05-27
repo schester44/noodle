@@ -2,6 +2,7 @@ import { EditorView } from "@codemirror/view";
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { tags as t } from "@lezer/highlight";
 import { Compartment } from "@codemirror/state";
+import { APPNAME } from "@common/constants";
 
 const darkPalette = {
   background: "#1F1F28",
@@ -10,21 +11,40 @@ const darkPalette = {
   orange: "#FF9F66",
   yellow: "#C9C093",
   dullGreen: "#79A79F",
-  paleBlue: "#7EB4C9"
+  paleBlue: "#7EB4C9",
+  selection: "#363646"
 };
 
 export const darkTheme = EditorView.theme(
   {
     ".editor-blocks-layer .block-even": {
-      background: darkPalette.background,
+      // background: darkPalette.background,
       borderTop: "1px solid #11232E"
     },
     ".editor-blocks-layer .block-odd": {
-      background: darkPalette.background2,
+      // background: darkPalette.background2,
       borderTop: "1px solid #11232E"
+    },
+    ".cm-selectionLayer .cm-selectionBackground": {
+      backgroundColor: `${darkPalette.selection} !important`
     },
     ".cm-selectionMatch": {
       backgroundColor: "#50606D"
+    },
+    ".cm-searchMatch": {
+      background: `transparent !important`,
+      outline: `1px solid ${darkPalette.orange}`
+    },
+    ".cm-content": {
+      padding: "4px"
+    },
+    [`.${APPNAME}-link`]: {
+      color: darkPalette.paleBlue,
+      textDecoration: "underline",
+      cursor: "pointer"
+    },
+    [`&.cm-meta-hover .${APPNAME}-link:hover`]: {
+      color: darkPalette.orange
     },
     ".cm-activeLine.editor-empty-block-selected": {
       "background-color": "#ff0000"
@@ -53,8 +73,13 @@ export const darkTheme = EditorView.theme(
     ".cm-line": {
       color: "#FFF"
     },
-    ".cm-fat-cursor": {
-      background: `${darkPalette.yellow} !important`,
+    "&:not(.cm-focused) .cm-vimCursorLayer .cm-fat-cursor": {
+      outline: `1px solid ${darkPalette.yellow}`,
+      background: "transparent",
+      color: "transparent !important"
+    },
+    "& .cm-vimCursorLayer .cm-fat-cursor": {
+      background: `${darkPalette.yellow}`,
       color: "black !important"
     },
     ".cm-cursor": {
@@ -117,6 +142,9 @@ export const lightTheme = EditorView.theme(
 export const baseTheme = EditorView.theme({
   "&": {
     backgroundColor: "transparent"
+  },
+  ".cm-layer.cm-selectionLayer": {
+    zIndex: -1
   },
   ".cm-editor": {
     height: "100vh"

@@ -10,3 +10,5 @@ export const IPC_CHANNELS = {
 } as const;
 
 export const NOTE_BLOCK_DELIMITER = "∞∞∞";
+
+export const APPNAME = "noodle";

@@ -24,6 +24,7 @@ import { languageDetection } from "./lang/detection/extension";
 import { aiExtension, copilotCompartment } from "./extensions/ai";
 import { checkboxExtension } from "./extensions/checkbox";
 import { setupVimModeSync, vimCompartment, vimExtension } from "./extensions/vim";
+import { linksExtension } from "./extensions/links";
 
 export class EditorInstance {
   note: NoteFormat | null = null;
@@ -74,7 +75,8 @@ export class EditorInstance {
         emitCursorChange({ editor: this, updateCurrentNote: actions.updateCurrentNote }),
         languageDetection({ path, editor: this }),
         copilotCompartment.of([isAIEnabled ? aiExtension() : []]),
-        checkboxExtension()
+        checkboxExtension(),
+        linksExtension()
       ]
     });
 
