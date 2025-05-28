@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from "react";
-import { Check, Trash } from "lucide-react";
+import { Check } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import {
@@ -28,7 +28,7 @@ export function FileSelector({
 
   useEffect(() => {
     const unsub = tinykeys(window, {
-      "Meta+p": () => {
+      "Meta+k": () => {
         setOpen((prev) => !prev);
       }
     });

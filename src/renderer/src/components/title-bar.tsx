@@ -35,7 +35,7 @@ export function TitleBar({
               <TooltipContent>
                 <div className="flex">
                   <p>Browse notes</p>
-                  <Cmd with="p" />
+                  <Cmd with="k" />
                 </div>
               </TooltipContent>
             </Tooltip>
