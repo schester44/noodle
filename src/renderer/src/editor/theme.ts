@@ -73,18 +73,6 @@ export const darkTheme = EditorView.theme(
     },
     ".cm-activeLine": {
       backgroundColor: "transparent"
-    },
-    ".cm-checkbox": {
-      appearance: "none",
-      width: "0.75rem",
-      height: "0.75rem",
-      background: "transparent",
-      outline: `1.5px solid ${darkPalette.orange}`,
-      borderRadius: "4px"
-    },
-    ".cm-checkbox:checked": {
-      backgroundColor: darkPalette.orange,
-      border: "1px solid black"
     }
   },
   { dark: true }

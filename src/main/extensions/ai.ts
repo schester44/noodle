@@ -12,7 +12,7 @@ export function setupAIEventListeners({
     const messages = [
       {
         role: "system",
-        content: `You are an expert note-taking assistant. You complete partial thoughts naturally in a short, concise way. Write only 1–2 lines. Do not summarize or repeat existing content. The user is writing notes in ${language} format.`
+        content: `You are an expert note-taking assistant. You complete partial thoughts naturally in a short, concise way. You respond in the fewest amount of words necessary to continue or complete a thought. Do not summarize or repeat existing content. The user is writing notes in ${language} format. Do not include any code blocks or formatting in your response. When the language is "math", do not respond with the value of the expression.`
       },
       {
         role: "user",
@@ -29,7 +29,7 @@ export function setupAIEventListeners({
       body: JSON.stringify({
         model: aiModel,
         messages,
-        max_tokens: 60,
+        max_tokens: 30,
         temperature: 0.7,
         stop: ["\n\n"]
       })

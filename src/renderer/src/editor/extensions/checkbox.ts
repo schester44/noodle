@@ -9,11 +9,13 @@ import {
   WidgetType
 } from "@codemirror/view";
 import { EditorSelection, Prec, RangeSetBuilder } from "@codemirror/state";
+import { darkPalette } from "../base-theme";
 
 class CheckboxWidget extends WidgetType {
   constructor(
     private checked: boolean,
-    private pos: number
+    private pos: number,
+    private severity: number
   ) {
     super();
   }
@@ -27,7 +29,7 @@ class CheckboxWidget extends WidgetType {
 
     input.type = "checkbox";
     input.checked = this.checked;
-    input.className = "cm-checkbox";
+    input.className = `cm-checkbox cm-checkbox-${this.severity}`;
 
     return input;
   }
@@ -49,6 +51,17 @@ function toggleCheckbox(view: EditorView, pos: number) {
   view.dispatch({ changes: change });
   return true;
 }
+
+const severityMap = {
+  high: 3,
+  h: 3,
+  medium: 2,
+  med: 2,
+  m: 2,
+  low: 1,
+  l: 1,
+  default: 0
+};
 
 const checkboxPlugin = ViewPlugin.fromClass(
   class {
@@ -76,12 +89,23 @@ const checkboxPlugin = ViewPlugin.fromClass(
               const text = view.state.doc.sliceString(node.from, node.to);
               const checked = text === "[x]" || text === "[X]";
 
+              const possibleSeverity = view.state.doc.sliceString(node.to, node.to + 6);
+
+              const checkboxPriorityRegex =
+                /!(high|h(?![a-zA-Z])|medium|med|m(?![a-zA-Z])|low|l(?![a-zA-Z]))/g;
+
+              const match = possibleSeverity.match(checkboxPriorityRegex);
+
+              const severity = match ? match[0].slice(1) : "default";
+
+              const severityLength = match ? match[0].length + 1 : 0;
+
               builder.add(
                 // -2 accounts for the "- " dashed prefix in the list
                 node.from - 2,
-                node.to,
+                node.to + severityLength,
                 Decoration.replace({
-                  widget: new CheckboxWidget(checked, node.from - 2),
+                  widget: new CheckboxWidget(checked, node.from - 2, severityMap[severity]),
                   inclusive: false
                 })
               );
@@ -169,10 +193,47 @@ const deleteCheckboxOnBackspaceHandler = {
   }
 };
 
+export const checkboxDarkTheme = EditorView.theme({
+  ".cm-checkbox": {
+    appearance: "none",
+    width: "0.75rem",
+    height: "0.75rem",
+    background: "transparent",
+    outline: `1.5px solid ${darkPalette.dullGreen}`,
+    borderRadius: "4px"
+  },
+  ".cm-checkbox:checked": {
+    backgroundColor: darkPalette.dullGreen,
+    border: "1px solid black"
+  },
+  // High
+  ".cm-checkbox.cm-checkbox-3": {
+    outlineColor: darkPalette.red
+  },
+  ".cm-checkbox.cm-checkbox-3:checked": {
+    backgroundColor: darkPalette.red
+  },
+  // Medium
+  ".cm-checkbox.cm-checkbox-2": {
+    outlineColor: darkPalette.orange
+  },
+  ".cm-checkbox.cm-checkbox-2:checked": {
+    outlineColor: darkPalette.orange
+  },
+  // Low
+  ".cm-checkbox.cm-checkbox-1": {
+    outlineColor: darkPalette.yellow
+  },
+  ".cm-checkbox.cm-checkbox-1:checked": {
+    outlineColor: darkPalette.yellow
+  }
+});
+
 export function checkboxExtension() {
   return [
     checkboxPlugin,
     autoInsertCheckboxWidget,
-    Prec.highest(keymap.of([deleteCheckboxOnBackspaceHandler]))
+    Prec.highest(keymap.of([deleteCheckboxOnBackspaceHandler])),
+    checkboxDarkTheme
   ];
 }
