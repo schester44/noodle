@@ -22,34 +22,32 @@ class CheckboxWidget extends WidgetType {
     return this.checked === other.checked && this.pos === other.pos;
   }
 
-  toDOM(view: EditorView): HTMLElement {
+  toDOM(): HTMLElement {
     const input = document.createElement("input");
+
     input.type = "checkbox";
     input.checked = this.checked;
     input.className = "cm-checkbox";
 
-    input.addEventListener("click", (event) => {
-      const replacement = this.checked ? "- [ ]" : "- [x]";
-
-      view.dispatch({
-        changes: {
-          from: this.pos,
-          to: this.pos + 5,
-          insert: replacement
-        }
-      });
-
-      event.preventDefault();
-      event.stopPropagation();
-    });
-
     return input;
   }
 
-  ignoreEvent(event: Event) {
-    // Ignore mouse events to prevent selection/focus changes
-    return event.type === "mousedown" || event.type === "click";
+  ignoreEvent() {
+    return false;
   }
+}
+
+function toggleCheckbox(view: EditorView, pos: number) {
+  const content = view.state.doc.sliceString(pos, pos + 5);
+
+  const isChecked = content.includes("[x]") || content.includes("[X]");
+
+  const change = isChecked
+    ? { from: pos, to: pos + 5, insert: "- [ ]" }
+    : { from: pos, to: pos + 5, insert: "- [x]" };
+
+  view.dispatch({ changes: change });
+  return true;
 }
 
 const checkboxPlugin = ViewPlugin.fromClass(
@@ -96,7 +94,23 @@ const checkboxPlugin = ViewPlugin.fromClass(
     }
   },
   {
-    decorations: (v) => v.decorations
+    decorations: (v) => v.decorations,
+    provide: (plugin) => {
+      // TODO: This works in insert mode but not in normal. will need to use a transactionFilter when in normal mode
+      return EditorView.atomicRanges.of((view) => {
+        const decorations = view.plugin(plugin)?.decorations;
+        return decorations || Decoration.none;
+      });
+    },
+    eventHandlers: {
+      mousedown: (e, view) => {
+        const target = e.target as HTMLElement;
+
+        if (target.nodeName !== "INPUT" || !target.classList.contains("cm-checkbox")) return;
+
+        return toggleCheckbox(view, view.posAtDOM(target));
+      }
+    }
   }
 );
 
