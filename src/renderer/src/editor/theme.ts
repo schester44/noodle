@@ -18,11 +18,11 @@ const darkPalette = {
 export const darkTheme = EditorView.theme(
   {
     ".editor-blocks-layer .block-even": {
-      // background: darkPalette.background,
+      background: darkPalette.background,
       borderTop: "1px solid #11232E"
     },
     ".editor-blocks-layer .block-odd": {
-      // background: darkPalette.background2,
+      background: darkPalette.background2,
       borderTop: "1px solid #11232E"
     },
     ".cm-selectionLayer .cm-selectionBackground": {
@@ -34,9 +34,6 @@ export const darkTheme = EditorView.theme(
     ".cm-searchMatch": {
       background: `transparent !important`,
       outline: `1px solid ${darkPalette.orange}`
-    },
-    ".cm-content": {
-      padding: "4px"
     },
     [`.${APPNAME}-link`]: {
       color: darkPalette.paleBlue,
@@ -141,20 +138,14 @@ export const lightTheme = EditorView.theme(
 
 export const baseTheme = EditorView.theme({
   "&": {
-    backgroundColor: "transparent"
+    backgroundColor: "transparent",
+    height: "100%"
   },
   ".cm-layer.cm-selectionLayer": {
     zIndex: -1
   },
-  ".cm-editor": {
-    height: "100vh"
-  },
-  ".cm-content .cm-gutter": {
-    height: "100vh"
-  },
   ".cm-scroller": {
-    overflow: "auto",
-    height: "100vh"
+    overflow: "auto"
   },
   ".cm-gutter.cm-lineNumbers": {
     paddingLeft: "7px"

@@ -28,22 +28,10 @@ export const blockLayer = layer({
       const fromCoordsTop =
         view.coordsAtPos(Math.max(block.content.from, view.visibleRanges[0].from))?.top || 0;
 
-      let toCoordsBottom =
+      const toCoordsBottom =
         view.coordsAtPos(
           Math.min(block.content.to, view.visibleRanges[view.visibleRanges.length - 1].to)
         )?.bottom || 0;
-
-      if (idx === blocks.length - 1) {
-        const editorHeight = view.dom.clientHeight;
-
-        // Calculate how much extra height we need to add to the last block
-        const extraHeight =
-          editorHeight -
-          (view.defaultLineHeight + // when scrolling furthest down, one line is still shown at the top
-            view.documentPadding.top +
-            8);
-        toCoordsBottom += extraHeight;
-      }
 
       markers.push(
         new RectangleMarker(
