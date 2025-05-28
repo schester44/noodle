@@ -3,6 +3,8 @@ import { Prec } from "@codemirror/state";
 import { keymap } from "@codemirror/view";
 import { commands, vimCommands } from "../commands";
 import { Vim } from "@replit/codemirror-vim";
+import { indentWithTab } from "@codemirror/commands";
+import { ghostTextValueField } from "./ghost-text";
 
 const cmd = (key: string, command: keyof typeof commands) => ({ key, command });
 const vimcmd = (key: string, command: keyof typeof vimCommands) => ({ key, command });
@@ -24,8 +26,16 @@ DEFAULT_VIM_COMMANDS.forEach((k) => {
   Vim.mapCommand(k.key, "action", k.command, [], {});
 });
 
+// Only add the indent with tab keymap if there is no ghost text
+const conditionalIndentKeymap = keymap.compute([ghostTextValueField], (state) => {
+  const ghostValue = state.field(ghostTextValueField, false);
+
+  return !ghostValue ? [indentWithTab] : [];
+});
+
 export function keymapExtension({ editor }: { editor: EditorInstance }) {
   return [
+    conditionalIndentKeymap,
     Prec.highest(
       keymap.of(
         DEFAULT_KEYMAPS.map((k) => {

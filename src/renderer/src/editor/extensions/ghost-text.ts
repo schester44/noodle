@@ -1,6 +1,6 @@
 import { StateField, StateEffect, RangeSetBuilder } from "@codemirror/state";
 import { Decoration, DecorationSet, EditorView, WidgetType, keymap } from "@codemirror/view";
-import { isInInsertMode, vimModeField } from "./vim";
+import { isInInsertMode } from "./vim";
 
 export const setGhostTextEffect = StateEffect.define<string>();
 
@@ -16,7 +16,7 @@ export const shouldTriggerCompletionField = StateField.define<boolean>({
   }
 });
 
-const ghostTextValueField = StateField.define<string>({
+export const ghostTextValueField = StateField.define<string>({
   create: () => "",
   update(value, tr) {
     for (const e of tr.effects) {
@@ -58,34 +58,30 @@ const ghostTextField = StateField.define<DecorationSet>({
   provide: (f) => EditorView.decorations.from(f)
 });
 
+class GhostTextWidget extends WidgetType {
+  txt: string;
+  constructor(private readonly text: string) {
+    super();
+    this.txt = text;
+  }
+
+  toDOM() {
+    const span = document.createElement("span");
+    span.textContent = this.txt;
+    span.style.opacity = "0.4";
+    span.style.pointerEvents = "none";
+    span.style.fontStyle = "italic";
+    span.style.whiteSpace = "pre";
+    return span;
+  }
+}
+
 function ghostDecoration(text: string): Decoration {
   return Decoration.widget({
     side: 1,
-    widget: new (class extends WidgetType {
-      toDOM() {
-        const span = document.createElement("span");
-        span.textContent = text;
-        span.style.opacity = "0.4";
-        span.style.pointerEvents = "none";
-        span.style.fontStyle = "italic";
-        span.style.whiteSpace = "pre";
-        return span;
-      }
-    })()
+    widget: new GhostTextWidget(text)
   });
 }
-
-// const clearGhostTextOnInput = ViewPlugin.fromClass(
-//   class {
-//     update(update: ViewUpdate) {
-//       if (update.docChanged || update.selectionSet) {
-//         requestAnimationFrame(() => {
-//           update.view.dispatch({ effects: setGhostTextEffect.of("") });
-//         });
-//       }
-//     }
-//   }
-// );
 
 const clearGhostTextOnEscape = keymap.of([
   {
