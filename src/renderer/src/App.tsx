@@ -17,7 +17,6 @@ function App(): React.JSX.Element {
 
   useEffect(() => {
     window.api.settings.loadConfig().then((config) => {
-      console.log("🪵 config", config);
       loadUserSettings(config.userConfig);
       setActiveEditor(config.appConfig.lastOpenedFile);
       setLoaded(true);
@@ -32,7 +31,7 @@ function App(): React.JSX.Element {
 
   useEffect(() => {
     const unsub = tinykeys(window, {
-      "Meta+p": () => {
+      "Meta+n": () => {
         handleNewNote();
       }
     });
