@@ -5,7 +5,7 @@ import { store as appConfig } from "./store/app-config";
 
 const FOCUSABLE_IN_DEV = false;
 
-export function createWindow(): BrowserWindow {
+export function createWindow(args?: { backgroundColor?: string }): BrowserWindow {
   const windowConfig = appConfig.get("window");
 
   const mainWindow = new BrowserWindow({
@@ -24,7 +24,8 @@ export function createWindow(): BrowserWindow {
     webPreferences: {
       preload: join(__dirname, "../preload/index.js"),
       sandbox: false
-    }
+    },
+    backgroundColor: args?.backgroundColor
   });
 
   mainWindow.on("ready-to-show", () => {
@@ -67,7 +68,7 @@ function updateWindowConfig(window: BrowserWindow) {
   });
 }
 
-export function setWindowTheme(theme: string, window: BrowserWindow) {
+export function getBackgroundColor(theme: string): string {
   const darkBackgroundColor = "#1A1A22";
   const lightBackgroundColor = "#FFFFFF";
 
@@ -80,5 +81,5 @@ export function setWindowTheme(theme: string, window: BrowserWindow) {
         ? darkBackgroundColor
         : lightBackgroundColor;
 
-  window.setBackgroundColor(backgroundColor);
+  return backgroundColor;
 }

@@ -3,7 +3,11 @@ import { ipcMain } from "electron";
 import { store as appConfig } from "./store/app-config";
 import { type UserConfig, store as userConfig } from "./store/user-config";
 
-export function setupSettingsEventListeners(): void {
+export function setupSettingsEventListeners({
+  onDidAnyChange
+}: {
+  onDidAnyChange: (config: UserConfig) => void;
+}): void {
   ipcMain.handle(IPC_CHANNELS.LOAD_SETTINGS, async () => {
     return {
       userConfig: userConfig.store,
@@ -25,5 +29,19 @@ export function setupSettingsEventListeners(): void {
     return {
       lastOpenedFile: appConfig.get("lastOpenedFile")
     };
+  });
+
+  userConfig.onDidAnyChange((config) => {
+    if (!config) return;
+
+    console.log("Config Change:", {
+      ...config,
+      ai: {
+        ...config.ai,
+        apiKey: config.ai.apiKey ? "********" : ""
+      }
+    });
+
+    onDidAnyChange(config);
   });
 }
