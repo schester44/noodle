@@ -1,4 +1,4 @@
-import { shell, BrowserWindow } from "electron";
+import { shell, BrowserWindow, nativeTheme } from "electron";
 import { join } from "path";
 import { is } from "@electron-toolkit/utils";
 import { store as appConfig } from "./store/app-config";
@@ -65,4 +65,20 @@ function updateWindowConfig(window: BrowserWindow) {
     width,
     height
   });
+}
+
+export function setWindowTheme(theme: string, window: BrowserWindow) {
+  const darkBackgroundColor = "#1A1A22";
+  const lightBackgroundColor = "#FFFFFF";
+
+  const backgroundColor =
+    theme === "system"
+      ? nativeTheme.shouldUseDarkColors
+        ? darkBackgroundColor
+        : lightBackgroundColor
+      : theme === "dark"
+        ? darkBackgroundColor
+        : lightBackgroundColor;
+
+  window.setBackgroundColor(backgroundColor);
 }

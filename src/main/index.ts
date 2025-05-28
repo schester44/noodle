@@ -1,13 +1,12 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import { electronApp, optimizer } from "@electron-toolkit/utils";
 
-import { createWindow } from "./window";
+import { createWindow, setWindowTheme } from "./window";
 import { FileLibrary, setupFileLibraryEventListeners } from "./library";
 import { store as userConfig } from "./store/user-config";
 import { getLibraryPath } from "./utils/get-library-path";
-import { nativeTheme } from "electron/main";
-import { store } from "./store/app-config";
 import { IPC_CHANNELS } from "@common/constants";
+import { setupSettingsEventListeners } from "./settings";
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
@@ -39,22 +38,6 @@ async function init() {
 
   const notesWindow = createWindow();
 
-  function setWindowTheme(theme: string, window: BrowserWindow) {
-    const darkBackgroundColor = "#1A1A22";
-    const lightBackgroundColor = "#FFFFFF";
-
-    const backgroundColor =
-      theme === "system"
-        ? nativeTheme.shouldUseDarkColors
-          ? darkBackgroundColor
-          : lightBackgroundColor
-        : theme === "dark"
-          ? darkBackgroundColor
-          : lightBackgroundColor;
-
-    window.setBackgroundColor(backgroundColor);
-  }
-
   setWindowTheme(userConfig.get("theme"), notesWindow);
 
   const libraryPath = getLibraryPath(userConfig.get("libraryPath"));
@@ -63,12 +46,6 @@ async function init() {
 
   let apiKey = userConfig.get("ai.apiKey");
   let aiModel = userConfig.get("ai.model");
-
-  ipcMain.handle(IPC_CHANNELS.GET_APP_CONFIG, async () => {
-    return {
-      lastOpenedFile: store.get("lastOpenedFile")
-    };
-  });
 
   userConfig.onDidAnyChange((config) => {
     console.log("Config Change:", {
@@ -91,22 +68,7 @@ async function init() {
     }
   });
 
-  ipcMain.handle(IPC_CHANNELS.LOAD_SETTINGS, async () => {
-    return {
-      userConfig: userConfig.store,
-      appConfig: {
-        lastOpenedFile: store.get("lastOpenedFile")
-      }
-    };
-  });
-
-  ipcMain.handle(IPC_CHANNELS.SAVE_USER_SETTINGS, async (_, config: { openAIAPIKey: string }) => {
-    Object.keys(config).forEach((key) => {
-      const value = config[key];
-
-      userConfig.set(key, value);
-    });
-  });
+  setupSettingsEventListeners();
 
   ipcMain.handle(IPC_CHANNELS.GET_AI_RESPONSE, async (_, { before, after, language }) => {
     const messages = [
