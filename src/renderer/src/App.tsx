@@ -6,6 +6,7 @@ import { ThemeProvider } from "./components/theme-provider";
 import { useEditorStore } from "./stores/editor-store";
 import { tinykeys } from "tinykeys";
 import { useNoteStore } from "./stores/note-store";
+import { usePluginsStore } from "./stores/plugin-store";
 
 function App(): React.JSX.Element {
   const [loaded, setLoaded] = useState(false);
@@ -14,6 +15,12 @@ function App(): React.JSX.Element {
   const setActiveEditor = useEditorStore((state) => state.setActiveEditor);
   const currentEditor = useEditorStore((state) => state.activeEditor);
   const currentBufferName = useNoteStore((state) => state.currentBufferName);
+
+  const loadPlugins = usePluginsStore((state) => state.loadPlugins);
+
+  useEffect(() => {
+    loadPlugins();
+  }, [loadPlugins]);
 
   useEffect(() => {
     window.api.settings.loadConfig().then((config) => {
