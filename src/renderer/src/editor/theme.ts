@@ -1,19 +1,8 @@
 import { EditorView } from "@codemirror/view";
-import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
-import { tags as t } from "@lezer/highlight";
 import { Compartment } from "@codemirror/state";
 import { APPNAME } from "@common/constants";
-
-const darkPalette = {
-  background: "#1F1F28",
-  background2: "#1A1A22",
-  dimText: "#53536C",
-  orange: "#FF9F66",
-  yellow: "#C9C093",
-  dullGreen: "#79A79F",
-  paleBlue: "#7EB4C9",
-  selection: "#363646"
-};
+import { darkPalette } from "./base-theme";
+import { markdownThemeExtension } from "./extensions/markdown-theme";
 
 export const darkTheme = EditorView.theme(
   {
@@ -202,12 +191,6 @@ export const createFontTheme = ({ fontFamily, fontSize, fontWeight }: FontThemeA
   });
 };
 
-export const markdownHighlightStyle = HighlightStyle.define([
-  { tag: t.heading1, fontSize: "1.3em", fontWeight: "bold", color: darkPalette.paleBlue },
-  { tag: t.heading2, fontSize: "1.3em", fontWeight: "bold", color: darkPalette.dullGreen },
-  { tag: t.heading3, fontSize: "1.3em", fontWeight: "bold", color: darkPalette.dullGreen }
-]);
-
 const themeCompartment = new Compartment();
 const fontCompartment = new Compartment();
 
@@ -234,7 +217,7 @@ export function themeExtension(initialTheme: {
 }) {
   return [
     baseTheme,
-    syntaxHighlighting(markdownHighlightStyle),
+    markdownThemeExtension(),
     themeCompartment.of(initialTheme.theme === "dark" ? darkTheme : lightTheme),
     fontCompartment.of(
       createFontTheme({

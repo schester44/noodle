@@ -25,6 +25,7 @@ import { aiExtension, copilotCompartment } from "./extensions/ai";
 import { checkboxExtension } from "./extensions/checkbox";
 import { setupVimModeSync, vimCompartment, vimExtension } from "./extensions/vim";
 import { linksExtension } from "./extensions/links";
+import { markdown } from "@codemirror/lang-markdown";
 
 export class EditorInstance {
   note: NoteFormat | null = null;
@@ -76,7 +77,8 @@ export class EditorInstance {
         languageDetection({ path, editor: this }),
         copilotCompartment.of([isAIEnabled ? aiExtension() : []]),
         checkboxExtension(),
-        linksExtension()
+        linksExtension(),
+        markdown()
       ]
     });
 

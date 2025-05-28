@@ -114,7 +114,7 @@ const checkboxPlugin = ViewPlugin.fromClass(
   }
 );
 
-const autoTaskInsertOnEnter = EditorView.inputHandler.of((view, from, _to, text) => {
+const autoInsertCheckboxWidget = EditorView.inputHandler.of((view, from, _to, text) => {
   // Only attempt to insert a checkbox when pressing space
   if (text === " ") {
     const line = view.state.doc.lineAt(from);
@@ -172,7 +172,7 @@ const deleteCheckboxOnBackspaceHandler = {
 export function checkboxExtension() {
   return [
     checkboxPlugin,
-    autoTaskInsertOnEnter,
+    autoInsertCheckboxWidget,
     Prec.highest(keymap.of([deleteCheckboxOnBackspaceHandler]))
   ];
 }
