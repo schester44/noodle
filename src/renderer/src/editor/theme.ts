@@ -119,7 +119,7 @@ export const baseTheme = EditorView.theme({
     height: "100%"
   },
   ".cm-layer.cm-selectionLayer": {
-    zIndex: -1
+    zIndex: `-1 !important`
   },
   ".cm-scroller": {
     overflow: "auto"

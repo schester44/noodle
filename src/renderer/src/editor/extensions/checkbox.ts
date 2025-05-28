@@ -91,14 +91,13 @@ const checkboxPlugin = ViewPlugin.fromClass(
 
               const possibleSeverity = view.state.doc.sliceString(node.to, node.to + 6);
 
-              const checkboxPriorityRegex =
-                /!(high|h(?![a-zA-Z])|medium|med|m(?![a-zA-Z])|low|l(?![a-zA-Z]))/g;
+              const checkboxPriorityRegex = /!(h(?![a-zA-Z])|m(?![a-zA-Z])|l(?![a-zA-Z])) /g;
 
               const match = possibleSeverity.match(checkboxPriorityRegex);
 
-              const severity = match ? match[0].slice(1) : "default";
+              const severity = match ? match[0].slice(1).trim() : "default";
 
-              const severityLength = match ? match[0].length + 1 : 0;
+              const severityLength = match ? match[0].length : 0;
 
               builder.add(
                 // -2 accounts for the "- " dashed prefix in the list
@@ -218,14 +217,14 @@ export const checkboxDarkTheme = EditorView.theme({
     outlineColor: darkPalette.orange
   },
   ".cm-checkbox.cm-checkbox-2:checked": {
-    outlineColor: darkPalette.orange
+    backgroundColor: darkPalette.orange
   },
   // Low
   ".cm-checkbox.cm-checkbox-1": {
     outlineColor: darkPalette.yellow
   },
   ".cm-checkbox.cm-checkbox-1:checked": {
-    outlineColor: darkPalette.yellow
+    backgroundColor: darkPalette.yellow
   }
 });
 
