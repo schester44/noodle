@@ -2,6 +2,7 @@ import { Decoration, EditorView, ViewPlugin, ViewUpdate } from "@codemirror/view
 import { MatchDecorator } from "@codemirror/view";
 import { RangeSet } from "@codemirror/state";
 import { APPNAME } from "@common/constants";
+import { getCM } from "@replit/codemirror-vim";
 
 const className = `${APPNAME}-link`;
 
@@ -73,4 +74,93 @@ const metaKey = EditorView.domEventHandlers({
   }
 });
 
-export const linksExtension = () => [links, metaKey];
+const pasteHandler = EditorView.domEventHandlers({
+  paste(event, view) {
+    const clipboardData = event.clipboardData;
+    if (!clipboardData) return;
+
+    const text = clipboardData.getData("text/plain");
+
+    if (!/^https?:\/\//.test(text)) return;
+
+    const range = getSelectionRange(view);
+    let from = range.from;
+    let to = range.to;
+    const isEntireLineSelected = range.isEntireLineSelected;
+
+    if (from === null || to === null) return;
+
+    // Only handle if selection is on a single line
+    const fromLine = view.state.doc.lineAt(from);
+    const toLine = view.state.doc.lineAt(to);
+
+    if (fromLine.number !== toLine.number) return;
+
+    let selectedText: string;
+
+    // FIXME: Wasn't seeing a way in the vim state to get the correct selection range when selecting entire lines
+    if (isEntireLineSelected) {
+      selectedText = fromLine.text;
+      from = fromLine.from;
+      to = from + fromLine.length;
+    } else {
+      selectedText = view.state.sliceDoc(from, to);
+    }
+
+    if (!selectedText) return;
+
+    // remove any existing markdown links from the selected text
+    const cleanedText = selectedText.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, "$1");
+    console.log("🪵 cleanedText", cleanedText, text);
+
+    const markdownLink = `[${cleanedText}](${text})`;
+
+    // Prevent default paste behavior
+    event.preventDefault();
+
+    view.dispatch({
+      changes: {
+        from,
+        to,
+        insert: markdownLink
+      }
+    });
+  }
+});
+
+// vim visual mode selection is not represented in the main selection,
+function getSelectionRange(view: EditorView): {
+  from: number | null;
+  to: number | null;
+  isEntireLineSelected?: boolean;
+} {
+  const cm = getCM(view);
+
+  if (!cm?.state.vim?.lastSelection.visualMode) {
+    return view.state.selection.main;
+  }
+
+  const { headMark, head, anchorMark, anchor } = cm.state.vim.lastSelection;
+
+  if (head.line !== anchor.line) {
+    return {
+      from: null,
+      to: null
+    };
+  }
+
+  if (headMark.offset && anchorMark.offset && headMark.offset === anchorMark.offset) {
+    return {
+      from: view.state.selection.main.from,
+      to: view.state.selection.main.to,
+      isEntireLineSelected: true
+    };
+  }
+
+  return {
+    from: anchorMark.offset,
+    to: Math.max(anchorMark.offset || 0, headMark?.offset || 0) + 1
+  };
+}
+
+export const linksExtension = () => [links, metaKey, pasteHandler];
