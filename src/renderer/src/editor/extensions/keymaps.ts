@@ -9,7 +9,7 @@ import { ghostTextValueField } from "./ghost-text";
 const cmd = (key: string, command: keyof typeof commands) => ({ key, command });
 const vimcmd = (key: string, command: keyof typeof vimCommands) => ({ key, command });
 
-const DEFAULT_KEYMAPS = [cmd("Mod-a", "selectAll"), cmd("Mod-Enter", "addNewBlockAfterCurrent")];
+const DEFAULT_KEYMAPS = [cmd("Mod-a", "selectAll"), cmd("Mod-Enter", "addNewBlockAtCursor")];
 
 const DEFAULT_VIM_COMMANDS = [vimcmd("zb", "toggleBlockFold")];
 

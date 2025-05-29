@@ -1,4 +1,5 @@
 import { addNewBlockAfterCurrent } from "./addNewBlockAfterCurrent";
+import { addNewBlockAtCursor } from "./addNewBlockAtCursor";
 import { selectAll } from "./selectAll";
 import { EditorCommand, EditorLessCommand } from "./types";
 import { toggleBlockFold } from "./vim/toggleFold";
@@ -15,7 +16,8 @@ const cmdLessContext = (run: EditorLessCommand, description: string) => ({
 
 export const commands = {
   selectAll: cmd(selectAll, "Select All"),
-  addNewBlockAfterCurrent: cmd(addNewBlockAfterCurrent, "Add New Block After Current")
+  addNewBlockAfterCurrent: cmd(addNewBlockAfterCurrent, "Add New Block After Current"),
+  addNewBlockAtCursor: cmd(addNewBlockAtCursor, "Add New Block At Cursor")
 };
 
 export const vimCommands = {

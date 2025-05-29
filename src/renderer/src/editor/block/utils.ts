@@ -2,6 +2,10 @@ import { BlockState } from "./block-parsing";
 import { blockState } from "./state/block-state";
 import { EditorState, SelectionRange } from "@codemirror/state";
 
+export function getBlockDelimiter(defaultToken: string, autoDetect: boolean) {
+  return `\n∞∞∞${autoDetect ? defaultToken + "-a" : defaultToken}\n`;
+}
+
 export function getActiveNoteBlock(state: EditorState): BlockState {
   const range = state.selection.asSingle().ranges[0];
 
