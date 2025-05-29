@@ -2,7 +2,9 @@ import { EditorView } from "@codemirror/view";
 import { Compartment } from "@codemirror/state";
 import { APPNAME } from "@common/constants";
 import { darkPalette } from "./base-theme";
-import { markdownThemeExtension } from "./extensions/markdown-theme";
+
+import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
+import { tags } from "@lezer/highlight";
 
 export const darkTheme = EditorView.theme(
   {
@@ -197,6 +199,97 @@ export function updateEditorFont(
   });
 }
 
+export const highlightThemeStyle = HighlightStyle.define([
+  { tag: tags.heading1, fontSize: "1.3em", fontWeight: "bold", color: darkPalette.paleBlue },
+  { tag: tags.heading2, fontSize: "1.3em", fontWeight: "bold", color: darkPalette.dullGreen },
+  { tag: tags.heading3, fontSize: "1.3em", fontWeight: "bold", color: darkPalette.dullGreen },
+  { tag: tags.strong, fontWeight: "bold" },
+  { tag: tags.emphasis, fontStyle: "italic" },
+  { tag: tags.link, color: darkPalette.paleBlue, textDecoration: "underline" },
+
+  { tag: tags.keyword, color: darkPalette.purple, fontStyle: "italic" },
+  {
+    tag: [tags.name, tags.deleted, tags.character, tags.propertyName, tags.macroName],
+    color: darkPalette.yellow
+  },
+  { tag: [tags.function(tags.variableName)], color: darkPalette.paleBlue },
+  { tag: [tags.variableName], color: darkPalette.lightYellow },
+
+  { tag: [tags.labelName], color: darkPalette.red },
+  {
+    tag: [tags.color, tags.constant(tags.name), tags.standard(tags.name)],
+    color: darkPalette.yellow
+  },
+  { tag: [tags.definition(tags.name), tags.separator], color: darkPalette.paleBlue },
+  { tag: [tags.brace], color: darkPalette.dimText },
+  {
+    tag: [tags.annotation],
+    color: darkPalette.dullGreen
+  },
+  {
+    tag: [tags.number, tags.changed, tags.annotation, tags.modifier, tags.self, tags.namespace],
+    color: darkPalette.warmPink
+  },
+  {
+    tag: [tags.typeName, tags.className],
+    color: darkPalette.dullGreen
+  },
+  {
+    tag: [tags.operator],
+    color: darkPalette.yellow
+  },
+  { tag: [tags.operatorKeyword], color: darkPalette.purple, fontStyle: "italic" },
+  {
+    tag: [tags.tagName],
+    color: darkPalette.paleBlue
+  },
+  {
+    tag: [tags.squareBracket],
+    color: darkPalette.steelBlue
+  },
+  {
+    tag: [tags.angleBracket],
+    color: darkPalette.steelBlue
+  },
+  {
+    tag: [tags.brace],
+    color: darkPalette.steelBlue
+  },
+  {
+    tag: [tags.paren],
+    color: darkPalette.steelBlue
+  },
+  {
+    tag: [tags.attributeName],
+    color: darkPalette.paleBlue
+  },
+  {
+    tag: [tags.regexp],
+    color: darkPalette.red
+  },
+  {
+    tag: [tags.quote],
+    color: darkPalette.orange
+  },
+  { tag: [tags.string], color: darkPalette.green },
+  {
+    tag: tags.link,
+    color: darkPalette.paleBlue,
+    textDecoration: "underline",
+    textUnderlinePosition: "under"
+  },
+  {
+    tag: [tags.url, tags.escape, tags.special(tags.string)],
+    color: darkPalette.paleBlue
+  },
+  { tag: [tags.comment, tags.lineComment, tags.blockComment], color: darkPalette.dimText },
+  { tag: tags.meta, color: darkPalette.dimText },
+  { tag: tags.invalid, color: darkPalette.red, textDecoration: "line-through" },
+  { tag: tags.atom, color: darkPalette.orange },
+  { tag: tags.bool, color: darkPalette.warmPink },
+  { tag: tags.processingInstruction, color: darkPalette.orange }
+]);
+
 export function themeExtension(initialTheme: {
   theme: string;
   fontFamily: string;
@@ -205,7 +298,7 @@ export function themeExtension(initialTheme: {
 }) {
   return [
     baseTheme,
-    markdownThemeExtension(),
+    syntaxHighlighting(highlightThemeStyle),
     themeCompartment.of(initialTheme.theme === "dark" ? darkTheme : lightTheme),
     fontCompartment.of(
       createFontTheme({
