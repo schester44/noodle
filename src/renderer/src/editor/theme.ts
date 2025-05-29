@@ -41,12 +41,13 @@ export const darkTheme = EditorView.theme(
       backgroundColor: "rgba(42, 42, 55, 0.2)"
     },
     ".editor-math-result": {
-      background: darkPalette.dullGreen,
+      background: darkPalette.purple,
       borderRadius: "4px",
       marginLeft: "4px",
       padding: "1px 4px",
-      color: "#fff",
-      fontSize: "12px"
+      color: darkPalette.background2,
+      fontSize: "12px",
+      fontWeight: "bold"
     },
     ".cm-gutterElement": {
       color: darkPalette.dimText

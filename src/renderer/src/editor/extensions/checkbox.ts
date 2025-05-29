@@ -10,6 +10,7 @@ import {
 } from "@codemirror/view";
 import { EditorSelection, Prec, RangeSetBuilder } from "@codemirror/state";
 import { darkPalette } from "../base-theme";
+import { getActiveNoteBlock } from "../block/utils";
 
 class CheckboxWidget extends WidgetType {
   constructor(
@@ -140,21 +141,41 @@ const checkboxPlugin = ViewPlugin.fromClass(
 const autoInsertCheckboxWidget = EditorView.inputHandler.of((view, from, _to, text) => {
   // Only attempt to insert a checkbox when pressing space
   if (text === " ") {
+    const block = getActiveNoteBlock(view.state);
+
+    if (block.language.name !== "markdown") return false;
+
     const line = view.state.doc.lineAt(from);
     const lineText = line.text;
 
-    const isCompletedCheckbox = lineText[0] === "[" && lineText[1] === "x" && lineText[2] === "]";
+    const regex = /\s*\[(?:x|X)?\]/;
 
-    const isIncompleteCheckbox = lineText[0] === "[" && lineText[1] === "]";
+    const match = lineText.match(regex);
+    console.log("🪵 match", match);
+
+    const checkbox = match?.[0].trimStart();
+
+    const isIncompleteCheckbox = checkbox === "[]";
+    const isCompletedCheckbox = checkbox && !isIncompleteCheckbox;
 
     if (isIncompleteCheckbox || isCompletedCheckbox) {
+      const alreadyHasCheckbox = lineText.includes("- [ ]") || lineText.includes("- [x]");
+
+      if (alreadyHasCheckbox) return false; // Don't insert if there's already a checkbox
+
+      const matchLen = checkbox.length;
+
+      const insertAt = from - matchLen;
+
       view.dispatch({
         changes: {
-          from: line.from,
-          to: line.from + (isCompletedCheckbox ? 3 : 2),
+          // isnert at the start of the match
+          from: insertAt,
+          // replace the entire match with a new markdown checkbox
+          to: insertAt + (isCompletedCheckbox ? matchLen : matchLen),
           insert: isCompletedCheckbox ? "- [x] " : "- [ ] "
         },
-        selection: { anchor: line.from + 6 }
+        selection: { anchor: insertAt + 6 }
       });
 
       return true;
@@ -176,6 +197,9 @@ const deleteCheckboxOnBackspaceHandler = {
     const match = beforeCursor.match(/^\s*[-*] \[( |x|X)\] $/);
 
     if (match) {
+      const block = getActiveNoteBlock(state);
+      if (block.language.name !== "markdown") return false;
+
       const deleteFrom = line.from;
       const deleteTo = from;
 
