@@ -1,4 +1,5 @@
 import { addNewBlockAfterCurrent } from "./addNewBlockAfterCurrent";
+import { addNewBlockBeforeCurrent } from "./addNewBlockBeforeCurrent";
 import { addNewBlockAtCursor } from "./addNewBlockAtCursor";
 import { selectAll } from "./selectAll";
 import { EditorCommand, EditorLessCommand } from "./types";
@@ -16,6 +17,7 @@ const cmdLessContext = (run: EditorLessCommand, description: string) => ({
 
 export const commands = {
   selectAll: cmd(selectAll, "Select All"),
+  addNewBlockBeforeCurrent: cmd(addNewBlockBeforeCurrent, "Add New Block Before Current"),
   addNewBlockAfterCurrent: cmd(addNewBlockAfterCurrent, "Add New Block After Current"),
   addNewBlockAtCursor: cmd(addNewBlockAtCursor, "Add New Block At Cursor")
 };

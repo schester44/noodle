@@ -12,7 +12,6 @@ export const CURSOR_CHANGE = "editor-cursor-change";
 export const APPEND_BLOCK = "editor-append-block";
 export const SET_FONT = "editor-set-font";
 
-// This function checks if any of the transactions has the given Heynote annotation
 export function transactionsHasAnnotation(transactions, annotation) {
   return transactions.some((tr) => tr.annotation(editorEvent) === annotation);
 }

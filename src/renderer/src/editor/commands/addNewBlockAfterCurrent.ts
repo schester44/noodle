@@ -1,36 +1,32 @@
 import { EditorSelection } from "@codemirror/state";
-import { getActiveNoteBlock } from "../block/utils";
-import { editorEvent } from "../annotation";
+import { getActiveNoteBlock, getBlockDelimiter } from "../block/utils";
 import { EditorCommand } from "./types";
-
-function getBlockDelimiter(defaultToken: string, autoDetect: boolean) {
-  return `\n∞∞∞${autoDetect ? defaultToken + "-a" : defaultToken}\n`;
-}
 
 export const addNewBlockAfterCurrent: EditorCommand =
   (editor) =>
   ({ state, dispatch }) => {
-    if (state.readOnly || !editor) return false;
+    {
+      if (state.readOnly || !editor) return false;
 
-    const block = getActiveNoteBlock(state);
-    const delimText = getBlockDelimiter(editor.defaultBlockToken, editor.defaultBlockAutoDetect);
+      const block = getActiveNoteBlock(state);
+      const delimiter = getBlockDelimiter(block.language.name, block.language.auto);
 
-    dispatch(
-      state.update(
-        {
-          changes: {
-            from: block.content.to,
-            insert: delimText
+      dispatch(
+        state.update(
+          {
+            changes: {
+              from: block.content.to,
+              insert: delimiter
+            },
+            selection: EditorSelection.cursor(block.content.to + delimiter.length)
           },
-          selection: EditorSelection.cursor(block.content.to + delimText.length),
-          annotations: [editorEvent.of("ADD_NEW_BLOCK")]
-        },
-        {
-          scrollIntoView: true,
-          userEvent: "input"
-        }
-      )
-    );
+          {
+            scrollIntoView: true,
+            userEvent: "input"
+          }
+        )
+      );
 
-    return true;
+      return true;
+    }
   };
