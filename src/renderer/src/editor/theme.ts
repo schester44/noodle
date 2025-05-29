@@ -201,17 +201,23 @@ export function updateEditorFont(
 
 export const highlightThemeStyle = HighlightStyle.define([
   { tag: tags.heading1, fontSize: "1.3em", fontWeight: "bold", color: darkPalette.paleBlue },
-  { tag: tags.heading2, fontSize: "1.3em", fontWeight: "bold", color: darkPalette.dullGreen },
-  { tag: tags.heading3, fontSize: "1.3em", fontWeight: "bold", color: darkPalette.dullGreen },
+  { tag: tags.heading2, fontSize: "1.2em", fontWeight: "bold", color: darkPalette.dullGreen },
+  { tag: tags.heading3, fontSize: "1.2em", fontWeight: "bold", color: darkPalette.dullGreen },
   { tag: tags.strong, fontWeight: "bold" },
   { tag: tags.emphasis, fontStyle: "italic" },
+  {
+    tag: [tags.null, tags.special(tags.variableName)],
+    color: darkPalette.warmPink,
+    fontStyle: "italic"
+  },
   { tag: tags.link, color: darkPalette.paleBlue, textDecoration: "underline" },
 
-  { tag: tags.keyword, color: darkPalette.purple, fontStyle: "italic" },
+  { tag: [tags.keyword, tags.modifier], color: darkPalette.purple },
   {
     tag: [tags.name, tags.deleted, tags.character, tags.propertyName, tags.macroName],
     color: darkPalette.yellow
   },
+  { tag: [tags.propertyName], color: darkPalette.paleBlue },
   { tag: [tags.function(tags.variableName)], color: darkPalette.paleBlue },
   { tag: [tags.variableName], color: darkPalette.lightYellow },
 
@@ -221,13 +227,17 @@ export const highlightThemeStyle = HighlightStyle.define([
     color: darkPalette.yellow
   },
   { tag: [tags.definition(tags.name), tags.separator], color: darkPalette.paleBlue },
+  {
+    tag: [tags.definition(tags.variableName)],
+    color: darkPalette.yellow
+  },
   { tag: [tags.brace], color: darkPalette.dimText },
   {
     tag: [tags.annotation],
     color: darkPalette.dullGreen
   },
   {
-    tag: [tags.number, tags.changed, tags.annotation, tags.modifier, tags.self, tags.namespace],
+    tag: [tags.number, tags.changed, tags.annotation, tags.self, tags.namespace],
     color: darkPalette.warmPink
   },
   {
@@ -236,7 +246,7 @@ export const highlightThemeStyle = HighlightStyle.define([
   },
   {
     tag: [tags.operator],
-    color: darkPalette.yellow
+    color: darkPalette.purple
   },
   { tag: [tags.operatorKeyword], color: darkPalette.purple, fontStyle: "italic" },
   {
@@ -244,19 +254,7 @@ export const highlightThemeStyle = HighlightStyle.define([
     color: darkPalette.paleBlue
   },
   {
-    tag: [tags.squareBracket],
-    color: darkPalette.steelBlue
-  },
-  {
-    tag: [tags.angleBracket],
-    color: darkPalette.steelBlue
-  },
-  {
-    tag: [tags.brace],
-    color: darkPalette.steelBlue
-  },
-  {
-    tag: [tags.paren],
+    tag: [tags.bracket],
     color: darkPalette.steelBlue
   },
   {
@@ -287,7 +285,7 @@ export const highlightThemeStyle = HighlightStyle.define([
   { tag: tags.invalid, color: darkPalette.red, textDecoration: "line-through" },
   { tag: tags.atom, color: darkPalette.orange },
   { tag: tags.bool, color: darkPalette.warmPink },
-  { tag: tags.processingInstruction, color: darkPalette.orange }
+  { tag: tags.processingInstruction, color: darkPalette.dimText }
 ]);
 
 export function themeExtension(initialTheme: {
