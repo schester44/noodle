@@ -72,14 +72,14 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                   <TabsTrigger value="appearance" className="justify-start mb-1 w-full">
                     Appearance
                   </TabsTrigger>
+                  <TabsTrigger value="keybindings" className="justify-start mb-1 w-full">
+                    Keyboard Shortcuts
+                  </TabsTrigger>
                   <TabsTrigger value="ai" className="justify-start mb-1 w-full">
                     AI
                   </TabsTrigger>
                   <TabsTrigger value="updates" className="justify-start mb-1 w-full">
                     Updates
-                  </TabsTrigger>
-                  <TabsTrigger value="keybindings" className="justify-start mb-1 w-full">
-                    Key Bindings
                   </TabsTrigger>
                 </TabsList>
               </Tabs>

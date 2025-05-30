@@ -15,9 +15,10 @@ export const formSchema = z.object({
   }),
   ai: z.object({
     enabled: z.boolean().default(false),
-    apiKey: z.string().min(5).startsWith("sk-").default("").optional(),
+    apiKey: z.string().min(0).startsWith("sk-").default(""),
     model: z.string().default("gpt-3.5-turbo")
-  })
+  }),
+  keyBindings: z.record(z.string())
 });
 
 export type FormInputs = z.infer<typeof formSchema>;

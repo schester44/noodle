@@ -1,37 +1,54 @@
+import { formatKey } from "@/lib/keybinds";
 import { X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface KeybindInputProps {
   value?: string;
+  allowSequences?: boolean;
   onChange: (keybind: string) => void;
   placeholder?: string;
 }
 
-const keyMap: Record<string, string> = {
-  Meta: "⌘",
-  Control: "⌃",
-  Alt: "⌥",
-  Shift: "⇧",
-  ArrowUp: "↑",
-  ArrowDown: "↓",
-  ArrowLeft: "←",
-  ArrowRight: "→",
-  Backspace: "⌫",
-  Delete: "⌦",
-  Enter: "↵",
-  Tab: "⇥",
-  Escape: "⎋",
-  " ": "Space"
-};
-
-export function KeybindInput({ value = "", onChange }: KeybindInputProps) {
+export function KeybindInput({ value = "", allowSequences, onChange }: KeybindInputProps) {
   const [isCapturing, setIsCapturing] = useState(false);
   const inputRef = useRef<HTMLDivElement>(null);
   const [pressedKeys, setPressedKeys] = useState<string[]>([]);
+  const [sequenceKeys, setSequenceKeys] = useState<string[]>([]);
+  const [isInSequence, setIsInSequence] = useState(false);
+  const sequenceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const formatKey = (key: string): string => {
-    return keyMap[key] || key;
-  };
+  const clearSequenceTimeout = useCallback(() => {
+    if (sequenceTimeoutRef.current) {
+      clearTimeout(sequenceTimeoutRef.current);
+      sequenceTimeoutRef.current = null;
+    }
+  }, []);
+
+  const completeSequence = useCallback(
+    (currentSequence?: string[]) => {
+      const sequence = currentSequence || sequenceKeys;
+
+      if (sequence.length > 0) {
+        const keybind = sequence.join("");
+        onChange(keybind);
+      }
+      setIsInSequence(false);
+      setSequenceKeys([]);
+      setIsCapturing(false);
+      clearSequenceTimeout();
+    },
+    [sequenceKeys, onChange, clearSequenceTimeout]
+  );
+
+  const startSequenceTimeout = useCallback(
+    (currentSequence: string[]) => {
+      clearSequenceTimeout();
+      sequenceTimeoutRef.current = setTimeout(() => {
+        completeSequence(currentSequence);
+      }, 2000);
+    },
+    [clearSequenceTimeout, completeSequence]
+  );
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -45,26 +62,59 @@ export function KeybindInput({ value = "", onChange }: KeybindInputProps) {
       // Keys for final saved value (smart shift handling)
       const saveKeys: string[] = [];
 
+      if (e.key === "Escape") {
+        setIsCapturing(false);
+        setIsInSequence(false);
+        setSequenceKeys([]);
+        setPressedKeys([]);
+        clearSequenceTimeout();
+        return;
+      }
+
+      const hasModifiers = e.metaKey || e.ctrlKey || e.altKey;
+      const isAlphabetic = /^[a-zA-Z]$/.test(e.key);
+      const isNumber = /^[0-9]$/.test(e.key);
+
+      // If we're in sequence mode and this is a simple key, add to sequence
+      if (isInSequence && !hasModifiers && (isAlphabetic || isNumber)) {
+        const newSequence = [...sequenceKeys, e.key.toLowerCase()];
+        setSequenceKeys(newSequence);
+        startSequenceTimeout(newSequence);
+        return;
+      }
+
+      // If this could start a sequence (single letter/number, no modifiers, sequences allowed)
+      if (allowSequences && !hasModifiers && (isAlphabetic || isNumber) && !isInSequence) {
+        const newSequence = [e.key.toLowerCase()];
+        setIsInSequence(true);
+        setSequenceKeys(newSequence);
+        setPressedKeys([]);
+        startSequenceTimeout(newSequence);
+        return;
+      }
+
       // Add modifiers in a consistent order
       if (e.metaKey) {
         displayKeys.push("⌘");
-        saveKeys.push("⌘");
+        saveKeys.push("Mod");
       }
 
       if (e.ctrlKey) {
-        displayKeys.push("⌃");
-        saveKeys.push("⌃");
+        displayKeys.push("Ctrl");
+        saveKeys.push("Ctrl");
       }
 
       if (e.altKey) {
         displayKeys.push("⌥");
-        saveKeys.push("⌥");
+        saveKeys.push("Alt");
       }
 
       if (e.shiftKey) {
-        displayKeys.push("⇧");
+        displayKeys.push("Shift");
         // Only add shift to save keys for non-alphabetic keys
       }
+
+      const modifierKeys = ["Meta", "Control", "Alt", "Shift"];
 
       // Add the main key if it's not a modifier
       if (!["Meta", "Control", "Alt", "Shift"].includes(e.key)) {
@@ -79,7 +129,7 @@ export function KeybindInput({ value = "", onChange }: KeybindInputProps) {
         } else {
           // For non-alphabetic keys, keep shift as a modifier
           if (e.shiftKey) {
-            saveKeys.push("⇧");
+            saveKeys.push("Shift");
           }
 
           const formattedKey = formatKey(e.key);
@@ -89,37 +139,48 @@ export function KeybindInput({ value = "", onChange }: KeybindInputProps) {
         }
       }
 
-      // Update pressed keys in real-time (always show what's being pressed)
-      console.log("🪵 displayKeys", displayKeys, saveKeys);
       setPressedKeys(displayKeys);
 
-      // Only finalize the keybind if we have a complete combination (at least one non-modifier key)
-      if (saveKeys.length > 0 && !["Meta", "Control", "Alt", "Shift"].includes(e.key)) {
-        const keybind = saveKeys.join("+");
+      if (saveKeys.length > 0 && !modifierKeys.includes(e.key)) {
+        const keybind = saveKeys.join("-");
         onChange(keybind);
         setIsCapturing(false);
         setPressedKeys([]);
-        inputRef.current?.blur(); // Remove focus from the input
+        inputRef.current?.blur();
       }
     },
-    [isCapturing, onChange]
+    [
+      isCapturing,
+      allowSequences,
+      isInSequence,
+      sequenceKeys,
+      startSequenceTimeout,
+      onChange,
+      clearSequenceTimeout
+    ]
   );
+
+  useEffect(() => {
+    return () => {
+      clearSequenceTimeout();
+    };
+  }, []);
 
   const handleKeyUp = useCallback(
     (e: KeyboardEvent) => {
-      if (!isCapturing) return;
+      if (!isCapturing || isInSequence) return;
 
       // Update the display to reflect released keys
       const keys: string[] = [];
 
       if (e.metaKey) keys.push("⌘");
-      if (e.ctrlKey) keys.push("⌃");
+      if (e.ctrlKey) keys.push("Ctrl");
       if (e.altKey) keys.push("⌥");
-      if (e.shiftKey) keys.push("⇧");
+      if (e.shiftKey) keys.push("Shift");
 
       setPressedKeys(keys);
     },
-    [isCapturing]
+    [isCapturing, isInSequence]
   );
 
   const handleFocus = () => {
@@ -131,7 +192,10 @@ export function KeybindInput({ value = "", onChange }: KeybindInputProps) {
     setPressedKeys([]);
   };
 
-  const clearKeybind = () => {
+  const clearKeybind = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
     onChange("");
     setIsCapturing(false);
   };
@@ -148,8 +212,6 @@ export function KeybindInput({ value = "", onChange }: KeybindInputProps) {
     };
   }, [isCapturing, handleKeyDown, handleKeyUp]);
 
-  console.log(value);
-
   return (
     <div className="relative">
       <div
@@ -158,7 +220,7 @@ export function KeybindInput({ value = "", onChange }: KeybindInputProps) {
         onFocus={handleFocus}
         onBlur={handleBlur}
         className={`
-          w-full px-3 py-2 border rounded-md cursor-text transition-colors
+          w-full px-3 py-2 border rounded-md cursor-text transition-colors relative
           ${
             isCapturing
               ? "border-blue-500 ring-2 ring-blue-200 bg-blue-50"
@@ -182,9 +244,9 @@ export function KeybindInput({ value = "", onChange }: KeybindInputProps) {
           </div>
         )}
 
-        {!isCapturing && value && (
+        {isCapturing && isInSequence && sequenceKeys.length > 0 && (
           <div className="font-mono text-xl flex items-center gap-1">
-            {value.split("+").map((key, index) => {
+            {sequenceKeys.map((key, index) => {
               return (
                 <div
                   key={index}
@@ -197,7 +259,22 @@ export function KeybindInput({ value = "", onChange }: KeybindInputProps) {
           </div>
         )}
 
-        {isCapturing && pressedKeys.length === 0 && (
+        {!isCapturing && value && (
+          <div className="font-mono text-xl flex items-center gap-1">
+            {value.split("-").map((key, index) => {
+              return (
+                <div
+                  key={index}
+                  className="text-muted bg-gray-200 px-2 rounded shadow-sm flex items-center justify-center"
+                >
+                  {formatKey(key)}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {isCapturing && pressedKeys.length === 0 && sequenceKeys.length === 0 && (
           <div className="text-gray-500 py-0.5">Press keys to capture keybind...</div>
         )}
 
@@ -205,7 +282,6 @@ export function KeybindInput({ value = "", onChange }: KeybindInputProps) {
           <div className="text-gray-500 py-0.5">Click to add keybind...</div>
         )}
       </div>
-
       {value && (
         <button
           onClick={clearKeybind}
@@ -214,6 +290,10 @@ export function KeybindInput({ value = "", onChange }: KeybindInputProps) {
         >
           <X size={14} />
         </button>
+      )}
+
+      {isInSequence && (
+        <span className="text-xs text-muted-foreground">Building sequence... (2s timeout)</span>
       )}
     </div>
   );

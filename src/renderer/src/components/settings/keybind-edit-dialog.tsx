@@ -1,14 +1,6 @@
+import { Keybind } from "@/editor/extensions/keymaps";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { KeybindInput } from "./keybind-input";
-
-export type Keybind = {
-  // todo: get these from commands or some central place
-  key: string;
-  modes?: Array<"normal" | "insert" | "visual">;
-  description: string;
-  default: string;
-  current: string;
-};
 
 export function KeybindEditDialog({
   open,
@@ -17,7 +9,7 @@ export function KeybindEditDialog({
 }: {
   open: boolean;
   keybind: Keybind | null;
-  onClose: (kb: { current: string }) => void;
+  onClose: (kb: Keybind) => void;
 }) {
   if (!keybind) return null;
 
@@ -33,7 +25,7 @@ export function KeybindEditDialog({
           <DialogTitle>Edit Keybind</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div>
           <div className="text-md">{keybind.description}</div>
           {keybind.modes?.length && (
             <div className="text-sm text-muted-foreground">
@@ -41,10 +33,11 @@ export function KeybindEditDialog({
             </div>
           )}
 
-          <div>
+          <div className="mt-4">
             <KeybindInput
-              value={keybind?.current}
-              onChange={(value) => onClose({ current: value })}
+              allowSequences={keybind.modes && keybind.modes.includes("normal")}
+              value={keybind.keys}
+              onChange={(value) => onClose({ ...keybind, keys: value })}
             />
           </div>
         </div>

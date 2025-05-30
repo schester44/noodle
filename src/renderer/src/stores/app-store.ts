@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { FormInputs } from "../components/settings/schema";
+import { Keybind } from "@/editor/extensions/keymaps";
 
 type AppState = {
   userSettings: FormInputs;
@@ -10,6 +11,7 @@ type AppStore = AppState & {
   saveUserSettings: (update: Partial<AppState["userSettings"]>) => void;
   toggleCopilot: () => void;
   toggleSettingsDialog: () => void;
+  updateKeyBinding: (opt: Pick<Keybind, "command" | "keys">) => void;
 };
 
 export const useAppStore = create<AppStore>((set) => ({
@@ -31,7 +33,21 @@ export const useAppStore = create<AppStore>((set) => ({
       enabled: false,
       apiKey: "",
       model: "gpt-3.5-turbo"
-    }
+    },
+    keyBindings: {}
+  },
+  updateKeyBinding: (opt) => {
+    set((state) => {
+      return {
+        userSettings: {
+          ...state.userSettings,
+          keyBindings: {
+            ...state.userSettings.keyBindings,
+            [opt.command]: opt.keys
+          }
+        }
+      };
+    });
   },
   toggleSettingsDialog: () => {
     set((state) => ({

@@ -10,9 +10,14 @@ const cmd = (run: EditorCommand, description: string) => ({
   description
 });
 
-const cmdLessContext = (run: EditorLessCommand, description: string) => ({
+const cmdLessContext = (
+  run: EditorLessCommand,
+  description: string,
+  modes: Array<"insert" | "visual" | "normal"> = ["normal"]
+) => ({
   run,
-  description
+  description,
+  modes
 });
 
 export const commands = {
@@ -22,6 +27,14 @@ export const commands = {
   addNewBlockAtCursor: cmd(addNewBlockAtCursor, "Add New Block At Cursor")
 };
 
+export type Command = keyof typeof commands;
+export type VimCommand = keyof typeof vimCommands;
+
 export const vimCommands = {
-  toggleBlockFold: cmdLessContext(toggleBlockFold, "Toggle Block Fold")
+  toggleBlockFold: cmdLessContext(toggleBlockFold, "Toggle Block Fold", ["normal"]),
+  toggleCheckbox: cmdLessContext(toggleBlockFold, "Toggle Checkbox", ["normal"])
 };
+
+export const POSSIBLE_COMMANDS = Object.keys(commands).concat(Object.keys(vimCommands)) as Array<
+  Command | VimCommand
+>;

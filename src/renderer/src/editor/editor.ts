@@ -1,6 +1,6 @@
 import { NoteFormat } from "@common/NoteFormat";
 import { ensureSyntaxTree, foldGutter, foldKeymap } from "@codemirror/language";
-import { EditorSelection, EditorState, Transaction } from "@codemirror/state";
+import { Compartment, EditorSelection, EditorState, Transaction } from "@codemirror/state";
 import {
   drawSelection,
   dropCursor,
@@ -37,6 +37,7 @@ export class EditorInstance {
   view: EditorView;
   defaultBlockToken: string = "markdown";
   defaultBlockAutoDetect: boolean = true;
+  keymapCompartment: Compartment;
 
   constructor({
     element,
@@ -44,7 +45,8 @@ export class EditorInstance {
     actions,
     isAIEnabled,
     initialTheme,
-    isVIMEnabled = false
+    isVIMEnabled = false,
+    initialKeyBindings = {}
   }: {
     element: Element;
     path: string;
@@ -52,8 +54,10 @@ export class EditorInstance {
     isAIEnabled: boolean;
     initialTheme: { theme: string; fontSize: number; fontFamily: string; fontWeight: string };
     isVIMEnabled?: boolean;
+    initialKeyBindings?: Record<string, string>;
   }) {
     this.path = path;
+    this.keymapCompartment = new Compartment();
 
     const state = EditorState.create({
       doc: "",
@@ -61,7 +65,9 @@ export class EditorInstance {
         vimCompartment.of(isVIMEnabled ? vimExtension() : []),
         keymap.of(defaultKeymap),
         keymap.of(foldKeymap),
-        keymapExtension({ editor: this }),
+        this.keymapCompartment.of(
+          keymapExtension({ editor: this, userKeyBinds: initialKeyBindings })
+        ),
         EditorView.lineWrapping,
         themeExtension(initialTheme),
         langExtension(),
@@ -169,6 +175,14 @@ export class EditorInstance {
           scrollIntoView: true
         });
       }
+    });
+  }
+
+  setKeymaps(keyBindings: Record<string, string>) {
+    this.view.dispatch({
+      effects: this.keymapCompartment.reconfigure(
+        keymapExtension({ editor: this, userKeyBinds: keyBindings })
+      )
     });
   }
 

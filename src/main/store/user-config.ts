@@ -1,6 +1,11 @@
 import ElectronStore from "electron-store";
 import { getLibraryPath } from "../utils/get-library-path";
 
+type UserKeyBinding = {
+  key: string;
+  command: string;
+};
+
 export interface UserConfig {
   libraryPath: string;
   autoUpdate: boolean;
@@ -19,6 +24,8 @@ export interface UserConfig {
     enabled: boolean;
     model: string;
   };
+  // { [Command | VimCommand]: string }
+  keyBindings: Record<string, string>;
 }
 
 const schema: ElectronStore.Schema<UserConfig> = {
@@ -29,6 +36,10 @@ const schema: ElectronStore.Schema<UserConfig> = {
   vim: {
     type: "boolean",
     default: true
+  },
+  keyBindings: {
+    type: "object",
+    default: {}
   },
   font: {
     type: "object",

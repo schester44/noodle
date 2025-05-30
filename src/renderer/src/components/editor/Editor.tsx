@@ -19,6 +19,7 @@ function useEditor({ fileName }: { fileName: string }) {
   const isVIMEnabled = useAppStore((state) => state.userSettings.vim);
   const font = useAppStore((state) => state.userSettings.font);
   const theme = useAppStore((state) => state.userSettings.theme);
+  const userKeyBinds = useAppStore((state) => state.userSettings.keyBindings);
 
   useEffect(() => {
     if (!editor) return;
@@ -54,6 +55,7 @@ function useEditor({ fileName }: { fileName: string }) {
           actions: { updateCurrentNote },
           isAIEnabled,
           isVIMEnabled,
+          initialKeyBindings: userKeyBinds,
           initialTheme: {
             theme,
             ...font
@@ -79,7 +81,8 @@ function useEditor({ fileName }: { fileName: string }) {
     isAIEnabled,
     theme,
     font,
-    isVIMEnabled
+    isVIMEnabled,
+    userKeyBinds
   ]);
 
   return { setContainer, editor };

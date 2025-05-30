@@ -1,24 +1,39 @@
 import { EditorInstance } from "../editor";
-import { Prec } from "@codemirror/state";
+import { Compartment, Prec } from "@codemirror/state";
 import { keymap } from "@codemirror/view";
-import { commands, vimCommands } from "../commands";
+import { Command, commands, VimCommand, vimCommands } from "../commands";
 import { Vim } from "@replit/codemirror-vim";
 import { indentWithTab } from "@codemirror/commands";
 import { ghostTextValueField } from "./ghost-text";
 
-const cmd = (key: string, command: keyof typeof commands) => ({ key, command });
-const vimcmd = (key: string, command: keyof typeof vimCommands) => ({ key, command });
+const cmd = (keys: string, command: Command) => ({ keys, command });
+const vimcmd = (keys: string, command: VimCommand) => ({ keys, command });
 
-const DEFAULT_KEYMAPS = [
-  cmd("Mod-a", "selectAll"),
-  cmd("Mod-Enter", "addNewBlockAtCursor"),
-  cmd("Mod-Shift-Enter", "addNewBlockAfterCurrent"),
-  cmd("Mod-Shift-Backspace", "addNewBlockBeforeCurrent")
-];
+type Keymap = {
+  defaultKeys?: string;
+  command: Command | VimCommand;
+  description: string;
+  modes?: Array<"normal" | "insert" | "visual">;
+};
 
-const DEFAULT_VIM_COMMANDS = [vimcmd("zb", "toggleBlockFold")];
+export type Keybind = Keymap & { keys: string };
 
-DEFAULT_VIM_COMMANDS.forEach((k) => {
+export const defaultKeyMaps: Record<Command | VimCommand, string> = {
+  selectAll: "Mod-a",
+  addNewBlockAtCursor: "Mod-Enter",
+  addNewBlockAfterCurrent: "Mod-Shift-Enter",
+  addNewBlockBeforeCurrent: "Mod-Shift-Backspace",
+  toggleBlockFold: "zb",
+  toggleCheckbox: "Enter"
+};
+
+export const DEFAULT_KEYMAPS = Object.entries(defaultKeyMaps).map(([command, keys]) => {
+  return cmd(keys, command as Command);
+});
+
+export const DEFAULT_VIM_KEYMAPS = [vimcmd("zb", "toggleBlockFold")];
+
+DEFAULT_VIM_KEYMAPS.forEach((k) => {
   Vim.defineAction(k.command, (cm) => {
     const view = cm.cm6;
     if (!view) return;
@@ -28,7 +43,7 @@ DEFAULT_VIM_COMMANDS.forEach((k) => {
     return command.run(view);
   });
 
-  Vim.mapCommand(k.key, "action", k.command, [], {});
+  Vim.mapCommand(k.keys, "action", k.command, [], {});
 });
 
 // Only add the indent with tab keymap if there is no ghost text
@@ -38,17 +53,43 @@ const conditionalIndentKeymap = keymap.compute([ghostTextValueField], (state) =>
   return !ghostValue ? [indentWithTab] : [];
 });
 
-export function keymapExtension({ editor }: { editor: EditorInstance }) {
+export const keymapCompartment = new Compartment();
+
+function getKeymaps(
+  defaultKeyMap: Array<{ command: Command; keys: string }>,
+  userKeyBinds: Record<string, string>
+) {
+  return [
+    ...Object.entries(userKeyBinds)
+      .filter(([command]) => !!commands[command])
+      .map(([command, keys]) => {
+        return cmd(keys, command as Command);
+      }),
+    ...DEFAULT_KEYMAPS.filter((keymap) => {
+      return !userKeyBinds[keymap.command] || userKeyBinds[keymap.command] === keymap.keys;
+    })
+  ];
+}
+
+export function keymapExtension({
+  editor,
+  userKeyBinds
+}: {
+  editor: EditorInstance;
+  userKeyBinds: Record<string, string>;
+}) {
+  const keybinds = getKeymaps(DEFAULT_KEYMAPS, userKeyBinds);
+
   return [
     conditionalIndentKeymap,
-    Prec.highest(
+    Prec.high(
       keymap.of(
-        DEFAULT_KEYMAPS.map((k) => {
+        keybinds.map((k) => {
           return {
-            key: k.key,
+            key: k.keys,
             run: (view) => {
               const command = commands[k.command];
-              console.log(`Running command: ${k.command}`, k.key);
+              console.log(`Running command: ${k.command}`, k.keys);
 
               if (!command) {
                 return false;
