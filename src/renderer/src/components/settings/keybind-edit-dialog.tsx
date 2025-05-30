@@ -35,6 +35,7 @@ export function KeybindEditDialog({
 
           <div className="mt-4">
             <KeybindInput
+              requireModifier={!keybind.modes || keybind.modes.includes("insert")}
               allowSequences={keybind.modes && keybind.modes.includes("normal")}
               value={keybind.keys}
               onChange={(value) => onClose({ ...keybind, keys: value })}

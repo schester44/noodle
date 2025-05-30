@@ -5,17 +5,24 @@ import { useCallback, useEffect, useRef, useState } from "react";
 interface KeybindInputProps {
   value?: string;
   allowSequences?: boolean;
+  requireModifier?: boolean;
   onChange: (keybind: string) => void;
   placeholder?: string;
 }
 
-export function KeybindInput({ value = "", allowSequences, onChange }: KeybindInputProps) {
+export function KeybindInput({
+  value = "",
+  requireModifier,
+  allowSequences,
+  onChange
+}: KeybindInputProps) {
   const [isCapturing, setIsCapturing] = useState(false);
   const inputRef = useRef<HTMLDivElement>(null);
   const [pressedKeys, setPressedKeys] = useState<string[]>([]);
   const [sequenceKeys, setSequenceKeys] = useState<string[]>([]);
   const [isInSequence, setIsInSequence] = useState(false);
   const sequenceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
 
   const clearSequenceTimeout = useCallback(() => {
     if (sequenceTimeoutRef.current) {
@@ -57,10 +64,13 @@ export function KeybindInput({ value = "", allowSequences, onChange }: KeybindIn
       e.preventDefault();
       e.stopPropagation();
 
+      const modifierKeys = ["Meta", "Control", "Alt", "Shift"];
       // Keys for real-time display (always show shift)
       const displayKeys: string[] = [];
       // Keys for final saved value (smart shift handling)
       const saveKeys: string[] = [];
+
+      setWarning(null);
 
       if (e.key === "Escape") {
         setIsCapturing(false);
@@ -74,6 +84,12 @@ export function KeybindInput({ value = "", allowSequences, onChange }: KeybindIn
       const hasModifiers = e.metaKey || e.ctrlKey || e.altKey;
       const isAlphabetic = /^[a-zA-Z]$/.test(e.key);
       const isNumber = /^[0-9]$/.test(e.key);
+
+      if (requireModifier && !hasModifiers) {
+        setWarning("This keybind requires a modifier key (Ctrl, Alt, or Meta).");
+        setTimeout(() => setWarning(null), 2000);
+        return;
+      }
 
       // If we're in sequence mode and this is a simple key, add to sequence
       if (isInSequence && !hasModifiers && (isAlphabetic || isNumber)) {
@@ -114,10 +130,8 @@ export function KeybindInput({ value = "", allowSequences, onChange }: KeybindIn
         // Only add shift to save keys for non-alphabetic keys
       }
 
-      const modifierKeys = ["Meta", "Control", "Alt", "Shift"];
-
       // Add the main key if it's not a modifier
-      if (!["Meta", "Control", "Alt", "Shift"].includes(e.key)) {
+      if (!modifierKeys.includes(e.key)) {
         const isAlphabetic = /^[a-zA-Z]$/.test(e.key);
 
         if (isAlphabetic) {
@@ -156,7 +170,8 @@ export function KeybindInput({ value = "", allowSequences, onChange }: KeybindIn
       sequenceKeys,
       startSequenceTimeout,
       onChange,
-      clearSequenceTimeout
+      clearSequenceTimeout,
+      requireModifier
     ]
   );
 
@@ -164,7 +179,7 @@ export function KeybindInput({ value = "", allowSequences, onChange }: KeybindIn
     return () => {
       clearSequenceTimeout();
     };
-  }, []);
+  }, [clearSequenceTimeout]);
 
   const handleKeyUp = useCallback(
     (e: KeyboardEvent) => {
@@ -291,6 +306,8 @@ export function KeybindInput({ value = "", allowSequences, onChange }: KeybindIn
           <X size={14} />
         </button>
       )}
+
+      {warning && <div className="text-red-500 text-sm mt-2">{warning}</div>}
 
       {isInSequence && (
         <span className="text-xs text-muted-foreground">Building sequence... (2s timeout)</span>
