@@ -98,7 +98,11 @@ export function Editor({ fileName }: { fileName: string }) {
       editor.setLanguage(language, false);
     }
 
-    editor.focus();
+    // FIXME: this is a hack to ensure the editor is focused after changing the language.
+    // the editor was losing focus even after the language change.
+    setTimeout(() => {
+      editor.focus();
+    }, 500);
   }
 
   return (

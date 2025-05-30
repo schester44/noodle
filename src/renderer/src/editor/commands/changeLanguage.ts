@@ -24,8 +24,6 @@ export function changeLanguageTo(
     );
   }
 
-  console.log("changing language to", language);
-
   dispatch(
     state.update({
       changes: {
