@@ -9,7 +9,7 @@ import {
 } from "@codemirror/view";
 import { EditorSelection, EditorState, Line, Prec, RangeSetBuilder } from "@codemirror/state";
 import { APPNAME } from "@common/constants";
-import { getActiveNoteBlock } from "@/editor/block/utils";
+import { getActiveNoteBlock, getBlockFromPos, getBlockLineFromPos } from "@/editor/block/utils";
 import { isInInsertMode } from "../vim";
 
 const separatorRegex = /^---$/gm;
@@ -59,6 +59,10 @@ export const separatorDecorator = ViewPlugin.fromClass(
         const index = match.index!;
         const from = index;
         const to = index + fullMatch.length;
+
+        const block = getBlockFromPos(view.state, from);
+
+        if (!block || block.language.name !== "markdown") continue;
 
         const cursorInside = cursorPositions.some((pos) => pos >= from && pos <= to);
 

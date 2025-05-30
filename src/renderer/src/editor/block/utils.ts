@@ -56,6 +56,16 @@ export function getSelectionSize(state: EditorState, sel: SelectionRange): numbe
   return count;
 }
 
+export function getBlockFromPos(state: EditorState, pos: number): BlockState | null {
+  const line = state.doc.lineAt(pos);
+
+  const block = state
+    .field(blockState)
+    .find((block) => block.content.from <= line.from && block.content.to >= line.from);
+
+  return block || null;
+}
+
 export function getBlockLineFromPos(state: EditorState, pos: number) {
   const line = state.doc.lineAt(pos);
   const block = state
