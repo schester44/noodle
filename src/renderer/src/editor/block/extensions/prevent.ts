@@ -40,6 +40,7 @@ export const preventSelectionBeforeFirstBlock = EditorState.transactionFilter.of
   const blocks = tr.startState.field(blockState);
 
   let changed = false;
+
   const newRanges = tr.selection?.ranges.map((range) => {
     let from = range.from;
     let to = range.to;
@@ -58,7 +59,7 @@ export const preventSelectionBeforeFirstBlock = EditorState.transactionFilter.of
      * When a selection change occurs in normal mode and it enters a delimiter, we should move it outside of the delimiter.
      * This occurs when deleeting a line
      **/
-    if (!isIndexNode(tr.state)) {
+    if (!isInInsertMode(tr.state)) {
       blocks.forEach((block) => {
         if (range.from > block.delimiter.from && range.from < block.delimiter.to) {
           changed = true;
