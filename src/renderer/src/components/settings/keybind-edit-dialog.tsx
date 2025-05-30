@@ -238,14 +238,13 @@ export function KeybindEditDialog({
   keybind: Keybind | null;
   onClose: (kb: { current: string }) => void;
 }) {
-  const [value, setValue] = useState(keybind?.current || "");
   if (!keybind) return null;
 
   return (
     <Dialog
       open={open}
       onOpenChange={() => {
-        onClose({ current: value });
+        onClose(keybind);
       }}
     >
       <DialogContent>
@@ -262,7 +261,10 @@ export function KeybindEditDialog({
           )}
 
           <div>
-            <KeybindInput value={value} onChange={setValue} />
+            <KeybindInput
+              value={keybind?.current}
+              onChange={(value) => onClose({ current: value })}
+            />
           </div>
         </div>
       </DialogContent>
