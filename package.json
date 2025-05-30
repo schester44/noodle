@@ -19,7 +19,7 @@
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac",
     "build:linux": "electron-vite build && electron-builder --linux",
-    "build-grammar": "lezer-generator src/renderer/src/editor/lang/editor.grammar -o src/renderer/src/editor/lang/parser.js"
+    "build-grammar": "sh ./build-grammar.sh"
   },
   "dependencies": {
     "@codemirror/commands": "^6.8.1",
