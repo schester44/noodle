@@ -12,6 +12,8 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/
 import { Input } from "../ui/input";
 import { useEffect, useState } from "react";
 
+const CAN_SELECT_THEME = false; // TODO: Enable this when themes are implemented
+
 export function AppearanceSettings() {
   const form = useFormContext<FormInputs>();
 
@@ -28,30 +30,32 @@ export function AppearanceSettings() {
           <CardTitle>Appearance</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <FormField
-            control={form.control}
-            name="theme"
-            render={({ field }) => {
-              return (
-                <FormItem className="pr-4">
-                  <FormLabel>Theme</FormLabel>
-                  <FormControl>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <SelectTrigger id={field.name} className="w-full max-w-1/2">
-                        <SelectValue placeholder="Select theme" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="dark">Dark</SelectItem>
-                        <SelectItem value="light">Light</SelectItem>
-                        <SelectItem value="system">System</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              );
-            }}
-          />
+          {CAN_SELECT_THEME && (
+            <FormField
+              control={form.control}
+              name="theme"
+              render={({ field }) => {
+                return (
+                  <FormItem className="pr-4">
+                    <FormLabel>Theme</FormLabel>
+                    <FormControl>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <SelectTrigger id={field.name} className="w-full max-w-1/2">
+                          <SelectValue placeholder="Select theme" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="dark">Dark</SelectItem>
+                          <SelectItem value="light">Light</SelectItem>
+                          <SelectItem value="system">System</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
+            />
+          )}
 
           <FormField
             control={form.control}

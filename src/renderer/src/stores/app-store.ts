@@ -3,14 +3,17 @@ import { FormInputs } from "../components/settings/schema";
 
 type AppState = {
   userSettings: FormInputs;
+  isSettingsDialogOpen: boolean;
 };
 
 type AppStore = AppState & {
   saveUserSettings: (update: Partial<AppState["userSettings"]>) => void;
   toggleCopilot: () => void;
+  toggleSettingsDialog: () => void;
 };
 
 export const useAppStore = create<AppStore>((set) => ({
+  isSettingsDialogOpen: false,
   userSettings: {
     libraryPath: "",
     autoUpdate: true,
@@ -29,6 +32,11 @@ export const useAppStore = create<AppStore>((set) => ({
       apiKey: "",
       model: "gpt-3.5-turbo"
     }
+  },
+  toggleSettingsDialog: () => {
+    set((state) => ({
+      isSettingsDialogOpen: !state.isSettingsDialogOpen
+    }));
   },
   saveUserSettings: (update) => {
     set((state) => {

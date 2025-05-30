@@ -15,18 +15,15 @@ export function StatusBar({
   onLangChange: (lang: string) => void;
 }) {
   const lang = getLanguage(language);
-  const [isSettingsVisible, setSettingsVisible] = useState(false);
 
   const isCopilotEnabled = useAppStore((state) => state.userSettings.ai.enabled);
-  const toggleGlobalCopilotState = useAppStore((state) => state.toggleCopilot);
-
-  function toggleCopilot() {
-    toggleGlobalCopilotState();
-  }
+  const toggleCopilot = useAppStore((state) => state.toggleCopilot);
+  const toggleSettingsVisible = useAppStore((state) => state.toggleSettingsDialog);
+  const isSettingsVisible = useAppStore((state) => state.isSettingsDialogOpen);
 
   return (
-    <div className="bg-[#16161D] w-full text-white text-xs px-2 flex justify-end items-center">
-      <SettingsModal open={isSettingsVisible} onOpenChange={setSettingsVisible} />
+    <div className="bg-[#16161D] w-full text-white text-xs px-4 flex justify-end items-center">
+      <SettingsModal open={isSettingsVisible} onOpenChange={toggleSettingsVisible} />
 
       {lang && (
         <div>
@@ -59,7 +56,7 @@ export function StatusBar({
       <div className="ml-3">
         <SettingsIcon
           className="w-3.5 cursor-pointer text-gray-400 hover:text-white transition-colors duration-200"
-          onClick={() => setSettingsVisible(true)}
+          onClick={toggleSettingsVisible}
         />
       </div>
     </div>

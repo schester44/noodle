@@ -14,6 +14,7 @@ function App(): React.JSX.Element {
   const setActiveEditor = useEditorStore((state) => state.setActiveEditor);
   const currentEditor = useEditorStore((state) => state.activeEditor);
   const currentBufferName = useNoteStore((state) => state.currentBufferName);
+  const toggleSettingsDialog = useAppStore((state) => state.toggleSettingsDialog);
 
   useEffect(() => {
     window.api.settings.loadConfig().then((config) => {
@@ -31,6 +32,9 @@ function App(): React.JSX.Element {
 
   useEffect(() => {
     const unsub = tinykeys(window, {
+      "Meta+,": () => {
+        toggleSettingsDialog();
+      },
       "Meta+n": () => {
         handleNewNote();
       }
@@ -39,7 +43,7 @@ function App(): React.JSX.Element {
     return () => {
       unsub();
     };
-  }, [handleNewNote]);
+  }, [handleNewNote, toggleSettingsDialog]);
 
   if (!loaded) {
     return (
