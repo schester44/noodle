@@ -42,6 +42,13 @@ export const darkTheme = EditorView.theme(
     [`&.cm-meta-hover .${APPNAME}-markdown-link:hover`]: {
       color: darkPalette.orange
     },
+    [`.${APPNAME}-separator`]: {
+      height: "2px",
+      backgroundColor: darkPalette.dimText
+    },
+    [`.${APPNAME}-separator[data-highlight=true]`]: {
+      backgroundColor: darkPalette.orange
+    },
     ".cm-activeLine.editor-empty-block-selected": {
       "background-color": "#ff0000"
     },

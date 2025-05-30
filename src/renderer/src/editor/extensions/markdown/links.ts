@@ -33,7 +33,7 @@ class MarkdownLinkWidget extends WidgetType {
   }
 }
 
-const markdownLinkHider = ViewPlugin.fromClass(
+export const markdownLinkHider = ViewPlugin.fromClass(
   class {
     decorations: DecorationSet;
 
@@ -98,7 +98,3 @@ const markdownLinkHider = ViewPlugin.fromClass(
     }
   }
 );
-
-export function markdownExtension() {
-  return [markdownLinkHider];
-}
