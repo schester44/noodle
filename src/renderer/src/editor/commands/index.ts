@@ -4,6 +4,9 @@ import { addNewBlockAtCursor } from "./addNewBlockAtCursor";
 import { selectAll } from "./selectAll";
 import { EditorCommand, EditorLessCommand } from "./types";
 import { toggleBlockFold } from "./vim/toggleFold";
+import { moveLineUp } from "./vim/moveLineUp";
+import { moveLineDown } from "./vim/moveLineDown";
+import { toggleCheckbox } from "./vim/toggleCheckbox";
 
 const cmd = (run: EditorCommand, description: string) => ({
   run,
@@ -32,7 +35,9 @@ export type VimCommand = keyof typeof vimCommands;
 
 export const vimCommands = {
   toggleBlockFold: cmdLessContext(toggleBlockFold, "Toggle Block Fold", ["normal"]),
-  toggleCheckbox: cmdLessContext(toggleBlockFold, "Toggle Checkbox", ["normal"])
+  toggleCheckbox: cmdLessContext(toggleCheckbox, "Toggle Checkbox", ["normal"]),
+  moveLineUp: cmdLessContext(moveLineUp, "Move Line Up", ["normal"]),
+  moveLineDown: cmdLessContext(moveLineDown, "Move Line Down", ["normal"])
 };
 
 export const POSSIBLE_COMMANDS = Object.keys(commands).concat(Object.keys(vimCommands)) as Array<

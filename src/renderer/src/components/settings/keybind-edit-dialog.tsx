@@ -1,13 +1,16 @@
-import { Keybind } from "@/editor/extensions/keymaps";
+import { defaultKeyMaps, Keybind } from "@/editor/extensions/keymaps";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { KeybindInput } from "./keybind-input";
+import { commands, vimCommands } from "@/editor/commands";
 
 export function KeybindEditDialog({
   open,
+  userKeyBinds,
   keybind,
   onClose
 }: {
   open: boolean;
+  userKeyBinds: Record<string, string>;
   keybind: Keybind | null;
   onClose: (kb: Keybind) => void;
 }) {
@@ -35,6 +38,17 @@ export function KeybindEditDialog({
 
           <div className="mt-4">
             <KeybindInput
+              validate={(value) => {
+                const existing = Object.entries({ ...userKeyBinds, ...defaultKeyMaps }).find(
+                  ([c, val]) => val === value && c !== keybind.command
+                );
+
+                if (!existing) return null;
+
+                const { description } = commands[existing[0]] || vimCommands[existing[0]] || {};
+
+                return `This shortcut is already assigned to "${description}"`;
+              }}
               requireModifier={!keybind.modes || keybind.modes.includes("insert")}
               allowSequences={keybind.modes && keybind.modes.includes("normal")}
               value={keybind.keys}

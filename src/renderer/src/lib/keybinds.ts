@@ -1,5 +1,5 @@
 const keyMap: Record<string, string> = {
-  Meta: "⌘",
+  Mod: "⌘",
   "-": "Minus",
   Alt: "⌥",
   ArrowUp: "↑",

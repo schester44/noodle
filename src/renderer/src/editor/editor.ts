@@ -12,7 +12,7 @@ import {
 import { themeExtension } from "./theme";
 import { langExtension } from "./lang/lang";
 import { blockExtension } from "./block/block";
-import { keymapExtension } from "./extensions/keymaps";
+import { keymapExtension, registerVimKeymaps } from "./extensions/keymaps";
 import { defaultKeymap, history } from "@codemirror/commands";
 import { highlightSelectionMatches } from "@codemirror/search";
 import { editorEvent, SET_CONTENT } from "./annotation";
@@ -59,15 +59,17 @@ export class EditorInstance {
     this.path = path;
     this.keymapCompartment = new Compartment();
 
+    registerVimKeymaps(initialKeyBindings);
+
     const state = EditorState.create({
       doc: "",
       extensions: [
         vimCompartment.of(isVIMEnabled ? vimExtension() : []),
-        keymap.of(defaultKeymap),
-        keymap.of(foldKeymap),
         this.keymapCompartment.of(
           keymapExtension({ editor: this, userKeyBinds: initialKeyBindings })
         ),
+        keymap.of(defaultKeymap),
+        keymap.of(foldKeymap),
         EditorView.lineWrapping,
         themeExtension(initialTheme),
         langExtension(),

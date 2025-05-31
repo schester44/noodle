@@ -24,27 +24,54 @@ export const defaultKeyMaps: Record<Command | VimCommand, string> = {
   addNewBlockAfterCurrent: "Mod-Shift-Enter",
   addNewBlockBeforeCurrent: "Mod-Shift-Backspace",
   toggleBlockFold: "zb",
-  toggleCheckbox: "Enter"
+  toggleCheckbox: "Enter",
+  moveLineUp: "K",
+  moveLineDown: "J"
 };
 
 export const DEFAULT_KEYMAPS = Object.entries(defaultKeyMaps).map(([command, keys]) => {
-  return cmd(keys, command as Command);
+  return commands[command] ? cmd(keys, command as Command) : vimcmd(keys, command as VimCommand);
 });
 
-export const DEFAULT_VIM_KEYMAPS = [vimcmd("zb", "toggleBlockFold")];
+export function registerVimKeymaps(userKeyBinds: Record<string, string>) {
+  const keymaps = [
+    ...Object.entries(userKeyBinds)
+      .filter(([command]) => !!vimCommands[command])
+      .map(([command, keys]) => {
+        return vimcmd(keys, command as VimCommand);
+      }),
+    ...DEFAULT_KEYMAPS.filter((keymap) => {
+      return vimCommands[keymap.command] && !userKeyBinds[keymap.command];
+    })
+  ];
 
-DEFAULT_VIM_KEYMAPS.forEach((k) => {
-  Vim.defineAction(k.command, (cm) => {
-    const view = cm.cm6;
-    if (!view) return;
+  function convertToVimKeys(keys: string): string {
+    return keys.replace("Enter", "<CR>");
+  }
 
+  keymaps.forEach((k) => {
     const command = vimCommands[k.command];
 
-    return command.run(view);
-  });
+    command.modes = command.modes || ["normal"];
 
-  Vim.mapCommand(k.keys, "action", k.command, [], {});
-});
+    const keys = convertToVimKeys(k.keys);
+
+    command.modes.forEach((mode) => {
+      Vim.unmap(keys, mode);
+    });
+
+    Vim.defineAction(k.command, (cm) => {
+      const view = cm.cm6;
+      if (!view) return;
+
+      const command = vimCommands[k.command];
+
+      return command.run(view);
+    });
+
+    Vim.mapCommand(keys, "action", k.command, [], {});
+  });
+}
 
 // Only add the indent with tab keymap if there is no ghost text
 const conditionalIndentKeymap = keymap.compute([ghostTextValueField], (state) => {
@@ -55,10 +82,7 @@ const conditionalIndentKeymap = keymap.compute([ghostTextValueField], (state) =>
 
 export const keymapCompartment = new Compartment();
 
-function getKeymaps(
-  defaultKeyMap: Array<{ command: Command; keys: string }>,
-  userKeyBinds: Record<string, string>
-) {
+function getKeymaps(userKeyBinds: Record<string, string>) {
   return [
     ...Object.entries(userKeyBinds)
       .filter(([command]) => !!commands[command])
@@ -66,7 +90,10 @@ function getKeymaps(
         return cmd(keys, command as Command);
       }),
     ...DEFAULT_KEYMAPS.filter((keymap) => {
-      return !userKeyBinds[keymap.command] || userKeyBinds[keymap.command] === keymap.keys;
+      return (
+        !!commands[keymap.command] &&
+        (!userKeyBinds[keymap.command] || userKeyBinds[keymap.command] === keymap.keys)
+      );
     })
   ];
 }
@@ -78,18 +105,17 @@ export function keymapExtension({
   editor: EditorInstance;
   userKeyBinds: Record<string, string>;
 }) {
-  const keybinds = getKeymaps(DEFAULT_KEYMAPS, userKeyBinds);
+  const keybinds = getKeymaps(userKeyBinds);
 
   return [
     conditionalIndentKeymap,
-    Prec.high(
+    Prec.highest(
       keymap.of(
         keybinds.map((k) => {
           return {
             key: k.keys,
             run: (view) => {
               const command = commands[k.command];
-              console.log(`Running command: ${k.command}`, k.keys);
 
               if (!command) {
                 return false;

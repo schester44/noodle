@@ -8,10 +8,12 @@ interface KeybindInputProps {
   requireModifier?: boolean;
   onChange: (keybind: string) => void;
   placeholder?: string;
+  validate?: (value: string) => string | null;
 }
 
 export function KeybindInput({
   value = "",
+  validate,
   requireModifier,
   allowSequences,
   onChange
@@ -31,20 +33,34 @@ export function KeybindInput({
     }
   }, []);
 
+  const handleSaveOrWarn = useCallback(
+    (value: string) => {
+      const warning = validate ? validate(value) : null;
+
+      if (warning) {
+        setWarning(warning);
+        return false;
+      }
+
+      return onChange(value);
+    },
+    [validate, onChange]
+  );
+
   const completeSequence = useCallback(
     (currentSequence?: string[]) => {
       const sequence = currentSequence || sequenceKeys;
 
       if (sequence.length > 0) {
         const keybind = sequence.join("");
-        onChange(keybind);
+        handleSaveOrWarn(keybind);
       }
       setIsInSequence(false);
       setSequenceKeys([]);
       setIsCapturing(false);
       clearSequenceTimeout();
     },
-    [sequenceKeys, onChange, clearSequenceTimeout]
+    [sequenceKeys, handleSaveOrWarn, clearSequenceTimeout]
   );
 
   const startSequenceTimeout = useCallback(
@@ -93,7 +109,7 @@ export function KeybindInput({
 
       // If we're in sequence mode and this is a simple key, add to sequence
       if (isInSequence && !hasModifiers && (isAlphabetic || isNumber)) {
-        const newSequence = [...sequenceKeys, e.key.toLowerCase()];
+        const newSequence = [...sequenceKeys, e.key];
         setSequenceKeys(newSequence);
         startSequenceTimeout(newSequence);
         return;
@@ -101,7 +117,7 @@ export function KeybindInput({
 
       // If this could start a sequence (single letter/number, no modifiers, sequences allowed)
       if (allowSequences && !hasModifiers && (isAlphabetic || isNumber) && !isInSequence) {
-        const newSequence = [e.key.toLowerCase()];
+        const newSequence = [e.key];
         setIsInSequence(true);
         setSequenceKeys(newSequence);
         setPressedKeys([]);
@@ -136,6 +152,7 @@ export function KeybindInput({
 
         if (isAlphabetic) {
           const isUppercase = e.key && e.shiftKey;
+          console.log("🪵 e", e);
           // For alphabetic keys, use uppercase in both display and save
           displayKeys.push(isUppercase ? e.key.toUpperCase() : e.key);
           saveKeys.push(isUppercase ? e.key.toUpperCase() : e.key);
@@ -157,7 +174,7 @@ export function KeybindInput({
 
       if (saveKeys.length > 0 && !modifierKeys.includes(e.key)) {
         const keybind = saveKeys.join("-");
-        onChange(keybind);
+        handleSaveOrWarn(keybind);
         setIsCapturing(false);
         setPressedKeys([]);
         inputRef.current?.blur();
@@ -169,7 +186,7 @@ export function KeybindInput({
       isInSequence,
       sequenceKeys,
       startSequenceTimeout,
-      onChange,
+      handleSaveOrWarn,
       clearSequenceTimeout,
       requireModifier
     ]
