@@ -1,0 +1,26 @@
+@top Document { Note* }
+
+Note {
+  NoteDelimiter
+  NoteContent
+}
+
+NoteDelimiter {
+    noteDelimiterEnter noteDelimiterMark NoteLanguage Auto? noteDelimiterEnter
+}
+
+NoteContent {
+    NoteInnerContent
+}
+
+
+@tokens {
+    noteDelimiterMark { "∞∞∞" }
+    NoteLanguage { "text" | "math" | "javascript" | "typescript" | "jsx" | "tsx" | "json" | "python" | "html" | "sql" | "markdown" | "yaml" | "sql" | "shell" | "css" | "lezer" | "php" }
+    Auto { "-a" }
+    noteDelimiterEnter { "\n" }
+    //NoteContent { String }
+    //String { (![∞])+ }
+}
+
+@external tokens noteContent from "./external-tokens.ts" { NoteInnerContent }
