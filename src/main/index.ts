@@ -8,7 +8,7 @@ import { getLibraryPath } from "./utils/get-library-path";
 import { setupSettingsEventListeners } from "./settings";
 import { setupAIEventListeners } from "./extensions/ai";
 import path from "node:path";
-import { checkForUpdates } from "./releases";
+import { checkForUpdates, getLatestVersionInfo } from "./releases";
 import { ipcMain } from "electron/main";
 import { IPC_CHANNELS } from "@common/constants";
 import { autoUpdater } from "electron-updater";
@@ -110,10 +110,11 @@ async function init() {
     })
   });
 
-  ipcMain.handle(IPC_CHANNELS.GET_APP_VERSION, () => {
-    const appVersion = app.getVersion();
+  ipcMain.handle(IPC_CHANNELS.GET_APP_VERSION, async () => {
+    const currentVersion = app.getVersion();
+    const latestVersion = await getLatestVersionInfo();
 
-    return appVersion;
+    return { currentVersion, latestVersion };
   });
 
   ipcMain.handle(IPC_CHANNELS.CHECK_FOR_UPDATES, () => {

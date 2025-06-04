@@ -24,13 +24,15 @@ import { useEffect, useState } from "react";
 import clsx from "clsx";
 
 export function UpdatesSettings() {
-  const [currentVersion, setCurrentVersion] = useState<string | null>(null);
-  const latestVersion = "1.2.3";
+  const [{ currentVersion, latestVersion }, setVersionInfo] = useState<{
+    currentVersion: string | null;
+    latestVersion: string | null;
+  }>({ currentVersion: null, latestVersion: null });
   const isLatestVersion = currentVersion === latestVersion;
   const [isCheckingForUpdates, setIsCheckingForUpdates] = useState(false);
 
   useEffect(() => {
-    window.api.getAppVersion().then(setCurrentVersion);
+    window.api.getAppVersion().then(setVersionInfo);
   }, []);
 
   const form = useFormContext<FormInputs>();
@@ -84,7 +86,14 @@ export function UpdatesSettings() {
           />
         </CardContent>
         <CardFooter className="flex gap-2">
-          <Button variant="outline" className="flex-1" disabled={isLatestVersion}>
+          <Button
+            variant="outline"
+            className="flex-1"
+            disabled={isLatestVersion}
+            onClick={() => {
+              window.api.checkForUpdates();
+            }}
+          >
             <Download className="mr-2 h-4 w-4" />
             Download Update
           </Button>
