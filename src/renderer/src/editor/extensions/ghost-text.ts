@@ -59,15 +59,13 @@ const ghostTextField = StateField.define<DecorationSet>({
 });
 
 class GhostTextWidget extends WidgetType {
-  txt: string;
   constructor(private readonly text: string) {
     super();
-    this.txt = text;
   }
 
   toDOM() {
     const span = document.createElement("span");
-    span.textContent = this.txt;
+    span.textContent = this.text;
     span.style.opacity = "0.4";
     span.style.pointerEvents = "none";
     span.style.fontStyle = "italic";

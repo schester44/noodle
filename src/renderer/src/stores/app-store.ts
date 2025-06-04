@@ -27,7 +27,8 @@ export const useAppStore = create<AppStore>((set) => ({
       fontWeight: "normal"
     },
     window: {
-      alwaysOnTop: false
+      alwaysOnTop: false,
+      showInDock: true
     },
     ai: {
       enabled: false,

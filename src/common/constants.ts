@@ -6,7 +6,9 @@ export const IPC_CHANNELS = {
   NEW_BUFFER: "buffer:new",
   LOAD_BUFFER: "buffer:load",
   SAVE_BUFFER: "buffer:save",
-  GET_ALL_BUFFERS: "buffer:get-all"
+  GET_ALL_BUFFERS: "buffer:get-all",
+  GET_APP_VERSION: "app:get-version",
+  CHECK_FOR_UPDATES: "app:check-for-updates"
 } as const;
 
 export const NOTE_BLOCK_DELIMITER = "∞∞∞";

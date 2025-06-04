@@ -38,6 +38,7 @@ export function KeybindSettings() {
   return (
     <div className="space-y-6">
       <KeybindEditDialog
+        userKeyBinds={userKeyBinds}
         open={!!editingKeybind}
         keybind={editingKeybind}
         onClose={(keybind) => {

@@ -21,6 +21,8 @@ export function createWindow(args?: { backgroundColor?: string }): BrowserWindow
     resizable: true,
     fullscreenable: false,
     fullscreen: false,
+    minWidth: 200,
+    minHeight: 200,
     webPreferences: {
       preload: join(__dirname, "../preload/index.js"),
       sandbox: false

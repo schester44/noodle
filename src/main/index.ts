@@ -8,6 +8,10 @@ import { getLibraryPath } from "./utils/get-library-path";
 import { setupSettingsEventListeners } from "./settings";
 import { setupAIEventListeners } from "./extensions/ai";
 import path from "node:path";
+import { checkForUpdates } from "./releases";
+import { ipcMain } from "electron/main";
+import { IPC_CHANNELS } from "@common/constants";
+import { autoUpdater } from "electron-updater";
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
@@ -17,6 +21,12 @@ app.on("window-all-closed", () => {
 
 async function init() {
   await app.whenReady();
+
+  if (userConfig.get("autoUpdate")) {
+    autoUpdater.checkForUpdates();
+  }
+
+  app.setAsDefaultProtocolClient("noodle");
 
   const isDev = !app.isPackaged;
   const iconPath = isDev
@@ -76,7 +86,9 @@ async function init() {
 
       notesWindow.setBackgroundColor(getBackgroundColor(config.theme));
       notesWindow.setAlwaysOnTop(config.window.alwaysOnTop, "screen-saver");
+
       setDockVisible(app, config.window.showInDock);
+      checkForUpdates({ enabled: config.autoUpdate });
     }
   });
 
@@ -97,6 +109,18 @@ async function init() {
       aiModel
     })
   });
+
+  ipcMain.handle(IPC_CHANNELS.GET_APP_VERSION, () => {
+    const appVersion = app.getVersion();
+
+    return appVersion;
+  });
+
+  ipcMain.handle(IPC_CHANNELS.CHECK_FOR_UPDATES, () => {
+    autoUpdater.checkForUpdates();
+  });
+
+  checkForUpdates({ enabled: userConfig.get("autoUpdate") });
 }
 
 init();

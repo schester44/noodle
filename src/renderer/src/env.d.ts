@@ -6,7 +6,9 @@ declare global {
   interface Window {
     electron: ElectronAPI;
     api: {
+      getAppVersion: () => Promise<string>;
       getAppConfig: () => Promise<{ lastOpenedFile: string }>;
+      checkForUpdates: () => Promise<void>;
       ai: {
         getResponse: (args: { before: string; after: string; language: string }) => Promise<string>;
       };

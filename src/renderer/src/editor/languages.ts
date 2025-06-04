@@ -24,13 +24,15 @@ import cssPrettierPlugin from "prettier/plugins/postcss";
 import markdownPrettierPlugin from "prettier/plugins/markdown";
 import yamlPrettierPlugin from "prettier/plugins/yaml";
 import * as prettierPluginEstree from "prettier/plugins/estree";
+import { Parser } from "@lezer/common";
+import { LRParser } from "@lezer/lr";
 
 class Language {
   token: string;
   name: string;
-  parser: any;
+  parser: LRParser | Parser | null;
   guesslang: string | null;
-  prettier: { parser: string; plugins: any[] } | null;
+  prettier: { parser: string; plugins: unknown[] } | null;
 
   /**
    * @param token: The token used to identify the language in the buffer content
@@ -48,9 +50,9 @@ class Language {
   }: {
     token: string;
     name: string;
-    parser: any;
+    parser: LRParser | Parser | null;
     guesslang: string | null;
-    prettier?: { parser: string; plugins: any[] } | null;
+    prettier?: { parser: string; plugins: unknown[] } | null;
   }) {
     this.token = token;
     this.name = name;

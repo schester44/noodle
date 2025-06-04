@@ -4,7 +4,13 @@ import { getFonts } from "font-list";
 import { IPC_CHANNELS } from "@common/constants";
 
 const api: typeof window.api = {
-  getAppConfig: async () => {
+  getAppVersion: () => {
+    return ipcRenderer.invoke(IPC_CHANNELS.GET_APP_VERSION);
+  },
+  checkForUpdates: () => {
+    return ipcRenderer.invoke(IPC_CHANNELS.CHECK_FOR_UPDATES);
+  },
+  getAppConfig: () => {
     return ipcRenderer.invoke(IPC_CHANNELS.GET_APP_CONFIG);
   },
   ai: {

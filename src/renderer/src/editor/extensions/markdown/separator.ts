@@ -9,7 +9,7 @@ import {
 } from "@codemirror/view";
 import { EditorSelection, EditorState, Line, Prec, RangeSetBuilder } from "@codemirror/state";
 import { APPNAME } from "@common/constants";
-import { getActiveNoteBlock, getBlockFromPos, getBlockLineFromPos } from "@/editor/block/utils";
+import { getActiveNoteBlock, getBlockFromPos } from "@/editor/block/utils";
 import { isInInsertMode } from "../vim";
 
 const separatorRegex = /^---$/gm;

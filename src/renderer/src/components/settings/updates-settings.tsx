@@ -20,11 +20,18 @@ import {
 } from "../ui/form";
 import { useFormContext } from "react-hook-form";
 import { FormInputs } from "./schema";
+import { useEffect, useState } from "react";
+import clsx from "clsx";
 
 export function UpdatesSettings() {
-  const currentVersion = "1.2.3";
+  const [currentVersion, setCurrentVersion] = useState<string | null>(null);
   const latestVersion = "1.2.3";
   const isLatestVersion = currentVersion === latestVersion;
+  const [isCheckingForUpdates, setIsCheckingForUpdates] = useState(false);
+
+  useEffect(() => {
+    window.api.getAppVersion().then(setCurrentVersion);
+  }, []);
 
   const form = useFormContext<FormInputs>();
 
@@ -82,39 +89,47 @@ export function UpdatesSettings() {
             Download Update
           </Button>
 
-          <Button variant="outline" size="icon">
-            <RefreshCw className="h-4 w-4" />
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => {
+              window.api.checkForUpdates();
+              setIsCheckingForUpdates(true);
+              setTimeout(() => setIsCheckingForUpdates(false), 2000);
+            }}
+          >
+            <RefreshCw className={clsx("h-4 w-4", isCheckingForUpdates && "animate-spin")} />
           </Button>
         </CardFooter>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Release Notes</CardTitle>
-          <CardDescription>What&apos;s new in version {currentVersion}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4 max-h-[200px] overflow-y-auto">
-          <div className="space-y-2">
-            <h4 className="font-medium">Version 1.2.3</h4>
-            <ul className="list-disc pl-5 space-y-1 text-sm">
-              <li>Improved AI suggestions for better writing assistance</li>
-              <li>Fixed bug with dark mode toggle in certain browsers</li>
-              <li>Added new keyboard shortcuts for common actions</li>
-              <li>Performance improvements for large documents</li>
-              <li>Updated dependencies for better security</li>
-            </ul>
-          </div>
-
-          <div className="space-y-2">
-            <h4 className="font-medium">Version 1.2.2</h4>
-            <ul className="list-disc pl-5 space-y-1 text-sm">
-              <li>Added export to PDF functionality</li>
-              <li>Fixed sync issues with cloud storage</li>
-              <li>Improved search functionality</li>
-            </ul>
-          </div>
-        </CardContent>
       </Card>
     </div>
   );
 }
+
+// <Card>
+//   <CardHeader>
+//     <CardTitle>Release Notes</CardTitle>
+//     <CardDescription>What&apos;s new in version {currentVersion}</CardDescription>
+//   </CardHeader>
+//   <CardContent className="space-y-4 max-h-[200px] overflow-y-auto">
+//     <div className="space-y-2">
+//       <h4 className="font-medium">Version 1.2.3</h4>
+//       <ul className="list-disc pl-5 space-y-1 text-sm">
+//         <li>Improved AI suggestions for better writing assistance</li>
+//         <li>Fixed bug with dark mode toggle in certain browsers</li>
+//         <li>Added new keyboard shortcuts for common actions</li>
+//         <li>Performance improvements for large documents</li>
+//         <li>Updated dependencies for better security</li>
+//       </ul>
+//     </div>
+//
+//     <div className="space-y-2">
+//       <h4 className="font-medium">Version 1.2.2</h4>
+//       <ul className="list-disc pl-5 space-y-1 text-sm">
+//         <li>Added export to PDF functionality</li>
+//         <li>Fixed sync issues with cloud storage</li>
+//         <li>Improved search functionality</li>
+//       </ul>
+//     </div>
+//   </CardContent>
+// </Card>

@@ -8,7 +8,7 @@ import {
   shouldTriggerCompletionField
 } from "./ghost-text";
 import { logger } from "../../lib/logger";
-import { isInInsertMode, vimModeField } from "./vim";
+import { isInInsertMode } from "./vim";
 
 let abortController: AbortController | null = null;
 let debounceTimer: number | null = null;

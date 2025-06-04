@@ -14,6 +14,7 @@ export const autoSaveContent = (editor: EditorInstance, interval = 300) => {
       update(update: ViewUpdate) {
         if (update.docChanged) {
           const initialSetContent = update.transactions
+            // @ts-ignore FIXME make use of t.annotation here
             .flatMap((t) => t.annotations)
             .some((a) => a.value === SET_CONTENT);
           if (!initialSetContent) {

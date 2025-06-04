@@ -1,7 +1,6 @@
 import { Bot, BotOff, SettingsIcon } from "lucide-react";
 import { getLanguage } from "../../editor/languages";
 import { LanguageSelector } from "./LanguageSelector";
-import { useState } from "react";
 import { SettingsModal } from "../settings/settings-dialog";
 import { useAppStore } from "../../stores/app-store";
 
