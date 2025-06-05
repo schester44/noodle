@@ -28,6 +28,8 @@ export const commands = {
   addNewBlockAtCursor: cmd(addNewBlockAtCursor, "Add New Block At Cursor"),
   newDailyNote: cmd(createNewDailyNote, "Create New Daily Note"),
   newNote: cmd(createNewNote, "Create New Note"),
+  // this is a placeholder, we don't actually call this function. its handled by tinykeys in App.tsx
+  // FIXME: Need an easy way to define commands that are not to be run by CodeMirror
   browseNotes: cmd(() => true, "Browse Notes")
 };
 

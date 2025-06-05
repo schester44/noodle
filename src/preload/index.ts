@@ -46,6 +46,9 @@ const api: typeof window.api = {
     },
     async getAll() {
       return await ipcRenderer.invoke(IPC_CHANNELS.GET_ALL_BUFFERS);
+    },
+    async getFileTree() {
+      return await ipcRenderer.invoke(IPC_CHANNELS.GET_FILE_TREE);
     }
   }
 };

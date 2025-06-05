@@ -1,6 +1,6 @@
 import fs from "fs";
 import fsp from "fs/promises";
-import { join } from "path";
+import { join, basename, extname } from "path";
 import os from "node:os";
 import { ipcMain } from "electron";
 import { store } from "./store/app-config";
@@ -16,7 +16,6 @@ export const initialContent = (name: string, template: "initial" | "daily" = "in
 {"formatVersion":"1.0.0","name":"${name}"}
 ${NOTE_BLOCK_DELIMITER}markdown-a
 # ${date}
-
 `;
   }
 
@@ -69,31 +68,31 @@ export class FileLibrary {
     const newFilePath = join(this.basePath, newFileName);
 
     if (fileExists(newFilePath)) {
-      return { path: newFileName };
+      return { path: newFilePath };
     }
 
     fs.writeFileSync(newFilePath, initialContent(newFileName, opts?.template), "utf8");
 
-    this.files[newFileName] = new NoteBuffer({ fullPath: newFilePath });
+    this.files[newFilePath] = new NoteBuffer(newFilePath);
 
-    return { path: newFileName };
+    return { path: newFilePath };
   }
 
-  load(name: string) {
-    store.set("lastOpenedFile", name);
+  load(file: string) {
+    console.log("Loading", file);
+    store.set("lastOpenedFile", file);
 
-    if (this.files[name]) {
-      return this.files[name].load();
+    if (this.files[file]) {
+      return this.files[file].load();
     }
 
-    const fullPath = fs.realpathSync(join(this.basePath, name));
+    this.files[file] = new NoteBuffer(file);
 
-    this.files[name] = new NoteBuffer({ fullPath });
-
-    return this.files[name].load();
+    return this.files[file].load();
   }
 
   save(name: string, content: string) {
+    console.log("Saving", name);
     if (!this.files[name]) {
       throw new Error(`File ${name} not loaded`);
     }
@@ -101,10 +100,20 @@ export class FileLibrary {
     return this.files[name].save(content);
   }
 
+  async getFileTree() {
+    return buildFileTree(this.basePath);
+  }
+
   async getAll() {
     const files = await getFiles(this.basePath);
 
-    const metadataList = await Promise.all(files.map(readNoteMetadata));
+    const metadataList = await Promise.all(
+      files.map(({ fullpath }) => {
+        const buffer = new NoteBuffer(fullpath);
+
+        return buffer.metadata();
+      })
+    );
 
     return files.map((file, i) => {
       return {
@@ -116,14 +125,10 @@ export class FileLibrary {
 }
 
 class NoteBuffer {
-  private fullPath: string;
-
-  constructor({ fullPath }: { fullPath: string }) {
-    this.fullPath = fullPath;
-  }
+  constructor(private path: string) {}
 
   async read() {
-    const data = await fsp.readFile(this.fullPath, "utf8");
+    const data = await fsp.readFile(this.path, "utf8");
 
     return data;
   }
@@ -135,40 +140,44 @@ class NoteBuffer {
   }
 
   async save(content: string) {
-    await fsp.writeFile(this.fullPath, content, "utf8");
+    await fsp.writeFile(this.path, content, "utf8");
 
     return true;
   }
 
+  async metadata() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const chunks: any[] = [];
+
+    for await (const chunk of fs.createReadStream(this.path, { start: 0, end: 4000 })) {
+      chunks.push(chunk);
+    }
+
+    const headContent = Buffer.concat(chunks).toString("utf8");
+
+    const firstSeparator = headContent.indexOf("\n∞∞∞");
+
+    if (firstSeparator === -1) {
+      return null;
+    }
+
+    try {
+      const metadata = JSON.parse(headContent.slice(0, firstSeparator).trim());
+
+      return { name: metadata.name, tags: metadata.tags || [] };
+    } catch {
+      return {};
+    }
+  }
+
   exists() {
-    return fs.existsSync(this.fullPath);
-  }
-}
-
-async function readNoteMetadata({ path, file }: { path: string; file: string }) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const chunks: any[] = [];
-
-  for await (const chunk of fs.createReadStream(join(path, file), { start: 0, end: 4000 })) {
-    chunks.push(chunk);
-  }
-
-  const headContent = Buffer.concat(chunks).toString("utf8");
-  const firstSeparator = headContent.indexOf("\n∞∞∞");
-  if (firstSeparator === -1) {
-    return null;
-  }
-  try {
-    const metadata = JSON.parse(headContent.slice(0, firstSeparator).trim());
-    return { name: metadata.name, tags: metadata.tags };
-  } catch {
-    return {};
+    return fs.existsSync(this.path);
   }
 }
 
 async function getFiles(path: string) {
   const files = await fsp.readdir(path, { withFileTypes: true });
-  const fileList: Array<{ file: string; path: string }> = [];
+  const fileList: Array<{ file: string; path: string; fullpath: string }> = [];
 
   for (const file of files) {
     const fullPath = join(path, file.name);
@@ -177,7 +186,7 @@ async function getFiles(path: string) {
       const subFiles = await getFiles(fullPath);
       fileList.push(...subFiles);
     } else if (file.isFile() && file.name.endsWith(".txt")) {
-      fileList.push({ file: file.name, path });
+      fileList.push({ fullpath: join(path, file.name), path, file: file.name });
     }
   }
   return fileList;
@@ -222,6 +231,48 @@ function formatDate(date: Date, options: { includeTime?: boolean } = {}) {
   return formattedDate;
 }
 
+type FileTreeItem = {
+  path: string;
+  name: string;
+  type: "directory" | "file";
+  children?: FileTreeItem[];
+};
+
+async function buildFileTree(rootDir: string): Promise<FileTreeItem | null> {
+  const stat = await fs.promises.stat(rootDir);
+
+  if (stat.isFile()) {
+    if (extname(rootDir) !== ".txt") return null;
+
+    return {
+      name: basename(rootDir),
+      path: rootDir,
+      type: "file"
+    };
+  }
+
+  const entries = await fs.promises.readdir(rootDir);
+  const children = await Promise.all(
+    entries.map(async (entry) => {
+      const fullPath = join(rootDir, entry);
+      try {
+        return await buildFileTree(fullPath);
+      } catch {
+        return null; // skip unreadable files
+      }
+    })
+  );
+
+  const validChildren = children.filter((c): c is FileTreeItem => c !== null);
+
+  return {
+    name: basename(rootDir),
+    path: rootDir,
+    type: "directory",
+    children: validChildren
+  };
+}
+
 export function setupFileLibraryEventListeners({ library }: { library: FileLibrary }) {
   ipcMain.handle(IPC_CHANNELS.CREATE_BUFFER, async (_, opts) => {
     return await library.createNew(opts);
@@ -243,5 +294,9 @@ export function setupFileLibraryEventListeners({ library }: { library: FileLibra
 
   ipcMain.handle(IPC_CHANNELS.GET_ALL_BUFFERS, async () => {
     return await library.getAll();
+  });
+
+  ipcMain.handle(IPC_CHANNELS.GET_FILE_TREE, async () => {
+    return await library.getFileTree();
   });
 }

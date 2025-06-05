@@ -27,7 +27,7 @@ export function FileSelector({
 }) {
   const [open, setOpen] = useState(false);
 
-  const [files, setFiles] = useState<{ path: string; file: string }[]>([]);
+  const [files, setFiles] = useState<{ fullpath: string; path: string; file: string }[]>([]);
 
   useEffect(() => {
     window.api.buffer.getAll().then((files) => {
@@ -56,33 +56,34 @@ export function FileSelector({
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent className="w-[200px] p-0 mr-8">
         <Command>
-          <CommandInput placeholder="Search framework..." />
+          <CommandInput placeholder="Search notes..." />
           <CommandList>
             <CommandEmpty>No notes found.</CommandEmpty>
             <CommandGroup>
               {files.map((file) => (
                 <CommandItem
                   className="flex items-center justify-between"
-                  key={file.file}
+                  key={file.fullpath}
                   value={file.file}
-                  onSelect={(currentValue) => {
-                    onSelect(currentValue);
+                  onSelect={() => {
+                    onSelect(file.fullpath);
                     setOpen(false);
                   }}
                 >
                   <div
                     className={cn(
                       "flex items-center",
-                      value === file.file && "font-medium text-yellow-200"
+                      value === file.fullpath && "font-medium text-yellow-200"
                     )}
                   >
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",
-                        value === file.file ? "opacity-100" : "opacity-0"
+                        value === file.fullpath ? "opacity-100" : "opacity-0"
                       )}
                     />
-                    {file.file}
+
+                    <div>{file.file}</div>
                   </div>
                 </CommandItem>
               ))}
