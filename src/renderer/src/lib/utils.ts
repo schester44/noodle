@@ -5,11 +5,38 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// this isn't perfect but it works for now.
-// outputs Shift+Meta+Shift+N for Mod-N
-export function cmToTinyKeys(key: string) {
-  return key
-    .replace("Mod-", "Meta+")
-    .replace("Ctrl-", "Control+")
-    .replace(/([A-Z])/g, (match) => (key.includes("Shift+") ? match : `Shift+${match}`));
+export function cmToTinyKeys(cmKey: string): string {
+  const parts = cmKey.split("-");
+
+  const modifiers = new Set<string>();
+  let key = "";
+
+  for (const part of parts) {
+    switch (part.toLowerCase()) {
+      case "mod":
+        modifiers.add("Meta");
+        break;
+      case "ctrl":
+      case "control":
+        modifiers.add("Control");
+        break;
+      case "alt":
+        modifiers.add("Alt");
+        break;
+      case "shift":
+        modifiers.add("Shift");
+        break;
+      case "meta":
+        modifiers.add("Meta");
+        break;
+      default:
+        key = part;
+        break;
+    }
+  }
+
+  const isUppercase = /[A-Z]/.test(key);
+  if (isUppercase) modifiers.add("Shift");
+
+  return [...modifiers].join("+") + (key ? "+" + key.toLowerCase() : "");
 }
