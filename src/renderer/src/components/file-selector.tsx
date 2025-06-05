@@ -58,7 +58,7 @@ export function FileSelector({
         <Command>
           <CommandInput placeholder="Search framework..." />
           <CommandList>
-            <CommandEmpty>No framework found.</CommandEmpty>
+            <CommandEmpty>No notes found.</CommandEmpty>
             <CommandGroup>
               {files.map((file) => (
                 <CommandItem
