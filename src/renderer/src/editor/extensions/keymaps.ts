@@ -6,8 +6,7 @@ import { Vim } from "@replit/codemirror-vim";
 import { indentWithTab } from "@codemirror/commands";
 import { ghostTextValueField } from "./ghost-text";
 
-const cmd = (keys: string, command: Command) => ({ keys, command });
-const vimcmd = (keys: string, command: VimCommand) => ({ keys, command });
+const cmd = (keys: string, command: Command | VimCommand) => ({ keys, command });
 
 type Keymap = {
   defaultKeys?: string;
@@ -27,11 +26,14 @@ export const defaultKeyMaps: Record<Command | VimCommand, string> = {
   toggleCheckbox: "Enter",
   moveLineUp: "K",
   moveLineDown: "J",
-  gotoLastNote: "Ctrl-6"
+  gotoLastNote: "Ctrl-6",
+  newDailyNote: "Mod-d",
+  newNote: "Mod-n",
+  browseNotes: "Mod-k"
 };
 
 export const DEFAULT_KEYMAPS = Object.entries(defaultKeyMaps).map(([command, keys]) => {
-  return commands[command] ? cmd(keys, command as Command) : vimcmd(keys, command as VimCommand);
+  return cmd(keys, command as Command);
 });
 
 export function registerVimKeymaps(editor: EditorInstance, userKeyBinds: Record<string, string>) {
@@ -39,7 +41,7 @@ export function registerVimKeymaps(editor: EditorInstance, userKeyBinds: Record<
     ...Object.entries(userKeyBinds)
       .filter(([command]) => !!vimCommands[command])
       .map(([command, keys]) => {
-        return vimcmd(keys, command as VimCommand);
+        return cmd(keys, command as VimCommand);
       }),
     ...DEFAULT_KEYMAPS.filter((keymap) => {
       return vimCommands[keymap.command] && !userKeyBinds[keymap.command];
@@ -76,7 +78,7 @@ export function registerVimKeymaps(editor: EditorInstance, userKeyBinds: Record<
 
       const command = vimCommands[k.command];
 
-      return command.run(view, editor);
+      return command.run({ editor, view });
     });
 
     Vim.mapCommand(keys, "action", k.command, [], {});
@@ -91,6 +93,14 @@ const conditionalIndentKeymap = keymap.compute([ghostTextValueField], (state) =>
 });
 
 export const keymapCompartment = new Compartment();
+
+export function getBrowseNotesKeyBind(userKeyBinds: Record<string, string>) {
+  return userKeyBinds.browseNotes || defaultKeyMaps.browseNotes;
+}
+
+export function getNewNoteKeyBind(userKeyBinds: Record<string, string>) {
+  return userKeyBinds.newNote || defaultKeyMaps.newNote;
+}
 
 function getKeymaps(userKeyBinds: Record<string, string>) {
   return [
@@ -131,7 +141,7 @@ export function keymapExtension({
                 return false;
               }
 
-              return command.run(editor)(view);
+              return command.run({ editor, view });
             }
           };
         })

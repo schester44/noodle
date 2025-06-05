@@ -22,6 +22,10 @@ declare global {
       };
       buffer: {
         new: () => Promise<{ path: string }>;
+        create: (opts: {
+          file: string;
+          template?: "initial" | "daily";
+        }) => Promise<{ path: string }>;
         load: (file: string) => Promise<string>;
         save: (file: string, content: string) => Promise<void>;
         getAll: () => Promise<Array<{ path: string; file: string }>>;

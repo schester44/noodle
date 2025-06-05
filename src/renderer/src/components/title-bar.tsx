@@ -1,6 +1,7 @@
 import { NotebookPenIcon, PlusIcon } from "lucide-react";
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { FileSelector } from "./file-selector";
+import { useAppStore } from "@/stores/app-store";
 
 export function TitleBar({
   activeEditor,
@@ -13,6 +14,11 @@ export function TitleBar({
   onNewNote: () => void;
   onNoteSelect: (file: string) => void;
 }) {
+  const userKeyBinds = useAppStore((state) => state.userSettings.keyBindings);
+
+  const browseNotesKeys = userKeyBinds.browseNotes || "Mod+k";
+  const newNoteKeys = userKeyBinds.newNote || "Mod+n";
+
   return (
     <TooltipProvider>
       <div className="bg-[#1F1F28] flex items-center justify-between text-white pt-1 px-3 pb-2 group">
@@ -24,6 +30,7 @@ export function TitleBar({
           <div>
             <Tooltip>
               <FileSelector
+                userKeyBinds={userKeyBinds}
                 value={activeEditor}
                 onSelect={onNoteSelect}
                 trigger={
@@ -35,7 +42,12 @@ export function TitleBar({
               <TooltipContent>
                 <div className="flex">
                   <p>Browse notes</p>
-                  <Cmd with="k" />
+
+                  <div className="flex items-center gap-1 z-10 pl-2">
+                    {browseNotesKeys.split("+").map((key, index) => {
+                      return <KeyboardKey key={index} display={key.replace("Mod", "⌘")} />;
+                    })}
+                  </div>
                 </div>
               </TooltipContent>
             </Tooltip>
@@ -51,7 +63,11 @@ export function TitleBar({
               <TooltipContent>
                 <div className="flex">
                   <p>Create new note</p>
-                  <Cmd with="n" />
+                  <div className="flex items-center gap-1 z-10 pl-2">
+                    {newNoteKeys.split("+").map((key, index) => {
+                      return <KeyboardKey key={index} display={key.replace("Mod", "⌘")} />;
+                    })}
+                  </div>
                 </div>
               </TooltipContent>
             </Tooltip>
@@ -59,15 +75,6 @@ export function TitleBar({
         </div>
       </div>
     </TooltipProvider>
-  );
-}
-
-function Cmd({ with: withKey }: { with: string }) {
-  return (
-    <div className="flex items-center gap-1 z-10 pl-2">
-      <KeyboardKey display="⌘" />
-      <KeyboardKey display={withKey} />
-    </div>
   );
 }
 

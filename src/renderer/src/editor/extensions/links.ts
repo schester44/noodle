@@ -135,7 +135,7 @@ function getSelectionRange(view: EditorView): {
 } {
   const cm = getCM(view);
 
-  if (!cm?.state.vim?.lastSelection.visualMode) {
+  if (!cm?.state.vim?.lastSelection?.visualMode) {
     return view.state.selection.main;
   }
 

@@ -8,7 +8,19 @@ import { IPC_CHANNELS, NOTE_BLOCK_DELIMITER } from "@common/constants";
 
 const DEFAULT_FILE_NAME = "noodle.txt";
 
-export const initialContent = (name: string) => `
+export const initialContent = (name: string, template: "initial" | "daily" = "initial") => {
+  if (template === "daily") {
+    const date = formatDate(new Date(), { includeTime: false });
+
+    return `
+{"formatVersion":"1.0.0","name":"${name}"}
+${NOTE_BLOCK_DELIMITER}markdown-a
+# ${date}
+
+`;
+  }
+
+  return `
 {"formatVersion":"1.0.0","name":"${name}"}
 ${NOTE_BLOCK_DELIMITER}markdown-a
 In Markdown blocks, lists with [x] and [ ] are rendered as checkboxes:
@@ -29,6 +41,7 @@ time = 3900 seconds to minutes
 time * 2
 ${NOTE_BLOCK_DELIMITER}markdown-a
 `;
+};
 
 export class FileLibrary {
   private basePath: string;
@@ -50,16 +63,16 @@ export class FileLibrary {
     }
   }
 
-  async createNew() {
-    const newFileName = formatDate(new Date()) + ".txt";
+  async createNew(opts?: { file?: string; template?: "initial" | "daily" }) {
+    const newFileName = opts?.file || formatDate(new Date()) + ".txt";
 
     const newFilePath = join(this.basePath, newFileName);
 
     if (fileExists(newFilePath)) {
-      throw new Error(`File ${newFileName} already exists`);
+      return { path: newFileName };
     }
 
-    fs.writeFileSync(newFilePath, initialContent(newFileName), "utf8");
+    fs.writeFileSync(newFilePath, initialContent(newFileName, opts?.template), "utf8");
 
     this.files[newFileName] = new NoteBuffer({ fullPath: newFilePath });
 
@@ -191,7 +204,7 @@ export function untildify(path: string) {
   return homeDir ? path.replace(/^~(?=$|\/|\\)/, homeDir) : path;
 }
 
-function formatDate(date: Date) {
+function formatDate(date: Date, options: { includeTime?: boolean } = {}) {
   const pad = (n: number) => n.toString().padStart(2, "0");
 
   const year = date.getFullYear();
@@ -200,10 +213,19 @@ function formatDate(date: Date) {
   const hours = pad(date.getHours());
   const minutes = pad(date.getMinutes());
 
-  return `${year}-${month}-${day}-${hours}${minutes}`;
+  let formattedDate = `${year}-${month}-${day}`;
+
+  if (options.includeTime !== false) {
+    formattedDate += `-${hours}${minutes}`;
+  }
+
+  return formattedDate;
 }
 
 export function setupFileLibraryEventListeners({ library }: { library: FileLibrary }) {
+  ipcMain.handle(IPC_CHANNELS.CREATE_BUFFER, async (_, opts) => {
+    return await library.createNew(opts);
+  });
   ipcMain.handle(IPC_CHANNELS.NEW_BUFFER, async () => {
     return await library.createNew();
   });

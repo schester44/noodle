@@ -1,7 +1,7 @@
 import { ReactNode, useEffect, useState } from "react";
 import { Check } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cmToTinyKeys, cn } from "@/lib/utils";
 import {
   Command,
   CommandEmpty,
@@ -12,35 +12,42 @@ import {
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { tinykeys } from "tinykeys";
+import { getBrowseNotesKeyBind } from "@/editor/extensions/keymaps";
 
 export function FileSelector({
   value,
   onSelect,
-  trigger
+  trigger,
+  userKeyBinds
 }: {
   value: string;
   onSelect: (value: string) => void;
   trigger: ReactNode;
+  userKeyBinds: Record<string, string>;
 }) {
   const [open, setOpen] = useState(false);
 
   const [files, setFiles] = useState<{ path: string; file: string }[]>([]);
 
   useEffect(() => {
-    const unsub = tinykeys(window, {
-      "Meta+k": () => {
-        setOpen((prev) => !prev);
-      }
-    });
-
     window.api.buffer.getAll().then((files) => {
       setFiles(files);
+    });
+  }, []);
+
+  useEffect(() => {
+    const keybind = cmToTinyKeys(getBrowseNotesKeyBind(userKeyBinds));
+
+    const unsub = tinykeys(window, {
+      [keybind]: () => {
+        setOpen((prev) => !prev);
+      }
     });
 
     return () => {
       unsub();
     };
-  }, []);
+  }, [userKeyBinds]);
 
   if (!files.length) return;
 

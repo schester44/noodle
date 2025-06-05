@@ -45,6 +45,11 @@ export function KeybindEditDialog({
 
                 if (!existing) return null;
 
+                const userCommand = userKeyBinds[existing[0]];
+                const isInUse = userCommand && userCommand === value;
+
+                if (!isInUse) return null;
+
                 const { description } = commands[existing[0]] || vimCommands[existing[0]] || {};
 
                 return `This shortcut is already assigned to "${description}"`;

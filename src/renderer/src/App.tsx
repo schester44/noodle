@@ -6,6 +6,7 @@ import { ThemeProvider } from "./components/theme-provider";
 import { useEditorStore } from "./stores/editor-store";
 import { tinykeys } from "tinykeys";
 import { useNoteStore } from "./stores/note-store";
+import { cmToTinyKeys } from "./lib/utils";
 
 function App(): React.JSX.Element {
   const [loaded, setLoaded] = useState(false);
@@ -30,12 +31,16 @@ function App(): React.JSX.Element {
     setActiveEditor(buf.path);
   }, [setActiveEditor]);
 
+  const newNoteKeyBind = useAppStore((state) => state.userSettings.keyBindings.newNote);
+
   useEffect(() => {
+    const keyBind = cmToTinyKeys(newNoteKeyBind || "Meta+n");
+
     const unsub = tinykeys(window, {
       "Meta+,": () => {
         toggleSettingsDialog();
       },
-      "Meta+n": () => {
+      [keyBind]: () => {
         handleNewNote();
       }
     });
@@ -43,7 +48,7 @@ function App(): React.JSX.Element {
     return () => {
       unsub();
     };
-  }, [handleNewNote, toggleSettingsDialog]);
+  }, [handleNewNote, toggleSettingsDialog, newNoteKeyBind]);
 
   if (!loaded) {
     return (

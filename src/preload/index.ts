@@ -35,10 +35,13 @@ const api: typeof window.api = {
     async new() {
       return await ipcRenderer.invoke(IPC_CHANNELS.NEW_BUFFER);
     },
-    async load(file: string) {
+    async create(opts) {
+      return await ipcRenderer.invoke(IPC_CHANNELS.CREATE_BUFFER, opts);
+    },
+    async load(file) {
       return await ipcRenderer.invoke(IPC_CHANNELS.LOAD_BUFFER, file);
     },
-    async save(file: string, content: string) {
+    async save(file, content) {
       return await ipcRenderer.invoke(IPC_CHANNELS.SAVE_BUFFER, { file, content });
     },
     async getAll() {
