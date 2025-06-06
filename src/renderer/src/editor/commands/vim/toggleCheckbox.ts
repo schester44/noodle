@@ -1,7 +1,7 @@
-import { EditorLessCommand } from "../types";
 import { EditorSelection, TransactionSpec } from "@codemirror/state";
+import { EditorCommand } from "../types";
 
-export const toggleCheckbox: EditorLessCommand = (view) => {
+export const toggleCheckbox: EditorCommand = ({ view }) => {
   const pos = view.state.selection.main.head;
 
   const currentLine = view.state.doc.lineAt(pos);

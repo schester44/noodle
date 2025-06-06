@@ -2,31 +2,29 @@ import { EditorSelection } from "@codemirror/state";
 import { getActiveNoteBlock, getBlockDelimiter } from "../block/utils";
 import { EditorCommand } from "./types";
 
-export const addNewBlockAfterCurrent: EditorCommand =
-  (editor) =>
-  ({ state, dispatch }) => {
-    {
-      if (state.readOnly || !editor) return false;
+export const addNewBlockAfterCurrent: EditorCommand = ({ view, editor }) => {
+  const { state, dispatch } = view;
 
-      const block = getActiveNoteBlock(state);
-      const delimiter = getBlockDelimiter(block.language.name, block.language.auto);
+  if (state.readOnly || !editor) return false;
 
-      dispatch(
-        state.update(
-          {
-            changes: {
-              from: block.content.to,
-              insert: delimiter
-            },
-            selection: EditorSelection.cursor(block.content.to + delimiter.length)
-          },
-          {
-            scrollIntoView: true,
-            userEvent: "input"
-          }
-        )
-      );
+  const block = getActiveNoteBlock(state);
+  const delimiter = getBlockDelimiter(block.language.name, block.language.auto);
 
-      return true;
-    }
-  };
+  dispatch(
+    state.update(
+      {
+        changes: {
+          from: block.content.to,
+          insert: delimiter
+        },
+        selection: EditorSelection.cursor(block.content.to + delimiter.length)
+      },
+      {
+        scrollIntoView: true,
+        userEvent: "input"
+      }
+    )
+  );
+
+  return true;
+};

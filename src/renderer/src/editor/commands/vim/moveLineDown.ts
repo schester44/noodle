@@ -1,8 +1,8 @@
-import { EditorLessCommand } from "../types";
+import { EditorCommand } from "../types";
 import { EditorSelection, TransactionSpec } from "@codemirror/state";
 import { NOTE_BLOCK_DELIMITER } from "@common/constants";
 
-export const moveLineDown: EditorLessCommand = (view) => {
+export const moveLineDown: EditorCommand = ({ view }) => {
   const pos = view.state.selection.main.head;
 
   const currentLine = view.state.doc.lineAt(pos);

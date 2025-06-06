@@ -1,21 +1,21 @@
 import { getActiveNoteBlock, getBlockDelimiter } from "../block/utils";
 import { EditorCommand } from "./types";
 
-export const addNewBlockAtCursor: EditorCommand =
-  (editor) =>
-  ({ state, dispatch }) => {
-    if (state.readOnly || !editor) return false;
+export const addNewBlockAtCursor: EditorCommand = ({ view, editor }) => {
+  const { state, dispatch } = view;
 
-    if (state.readOnly) return false;
+  if (state.readOnly || !editor) return false;
 
-    const currentBlock = getActiveNoteBlock(state);
+  if (state.readOnly) return false;
 
-    const delimiter = getBlockDelimiter(currentBlock.language.name, currentBlock.language.auto);
+  const currentBlock = getActiveNoteBlock(state);
 
-    dispatch(state.replaceSelection(delimiter), {
-      scrollIntoView: true,
-      userEvent: "input"
-    });
+  const delimiter = getBlockDelimiter(currentBlock.language.name, currentBlock.language.auto);
 
-    return true;
-  };
+  dispatch(state.replaceSelection(delimiter), {
+    scrollIntoView: true,
+    userEvent: "input"
+  });
+
+  return true;
+};

@@ -1,8 +1,8 @@
 import { getNoteBlockFromPos } from "../../block/utils";
 import { foldedRanges, foldEffect, unfoldEffect } from "@codemirror/language";
-import { EditorLessCommand } from "../types";
+import { EditorCommand } from "../types";
 
-export const toggleBlockFold: EditorLessCommand = (view) => {
+export const toggleBlockFold: EditorCommand = ({ view }) => {
   const { state, dispatch } = view;
   const pos = state.selection.main.head;
 

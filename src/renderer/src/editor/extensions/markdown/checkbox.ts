@@ -64,6 +64,50 @@ const severityMap = {
   default: 0
 };
 
+const checkboxCheckedPlugin = ViewPlugin.fromClass(
+  class {
+    decorations: DecorationSet;
+
+    constructor(view: EditorView) {
+      this.decorations = this.buildDecorations(view);
+    }
+
+    update(update: ViewUpdate) {
+      if (update.docChanged || update.viewportChanged) {
+        this.decorations = this.buildDecorations(update.view);
+      }
+    }
+
+    buildDecorations(view: EditorView): DecorationSet {
+      const builder = new RangeSetBuilder<Decoration>();
+
+      for (const { from, to } of view.visibleRanges) {
+        syntaxTree(view.state).iterate({
+          from,
+          to,
+          enter: (node) => {
+            if (node.name === "TaskMarker") {
+              const text = view.state.doc.sliceString(node.from, node.to);
+              const checked = text === "[x]" || text === "[X]";
+
+              if (checked) {
+                const line = view.state.doc.lineAt(node.from);
+
+                builder.add(line.from, line.to, Decoration.mark({ class: "cm-task-checked-line" }));
+              }
+            }
+          }
+        });
+      }
+
+      return builder.finish();
+    }
+  },
+  {
+    decorations: (v) => v.decorations
+  }
+);
+
 const checkboxPlugin = ViewPlugin.fromClass(
   class {
     decorations: DecorationSet;
@@ -99,11 +143,13 @@ const checkboxPlugin = ViewPlugin.fromClass(
               const severity = match ? match[0].slice(1).trim() : "default";
 
               const severityLength = match ? match[0].length : 0;
+              const checkboxFrom = node.from - 2;
+              const checkboxTo = node.to + severityLength;
 
               builder.add(
                 // -2 accounts for the "- " dashed prefix in the list
-                node.from - 2,
-                node.to + severityLength,
+                checkboxFrom,
+                checkboxTo,
                 Decoration.replace({
                   widget: new CheckboxWidget(checked, node.from - 2, severityMap[severity]),
                   inclusive: false
@@ -248,12 +294,17 @@ export const checkboxDarkTheme = EditorView.theme({
   },
   ".cm-checkbox.cm-checkbox-1:checked": {
     backgroundColor: darkPalette.yellow
+  },
+  ".cm-task-checked-line": {
+    opacity: 0.4,
+    fontStyle: "italic"
   }
 });
 
 export function checkboxExtension() {
   return [
     checkboxPlugin,
+    checkboxCheckedPlugin,
     autoInsertCheckboxWidget,
     Prec.highest(keymap.of([deleteCheckboxOnBackspaceHandler])),
     checkboxDarkTheme

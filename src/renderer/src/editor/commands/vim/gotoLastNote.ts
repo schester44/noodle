@@ -1,8 +1,8 @@
 import { useEditorStore } from "@/stores/editor-store";
-import { EditorLessCommand } from "../types";
+import { EditorCommand } from "../types";
 
-export const gotoLastNote: EditorLessCommand = (_, editor) => {
-  if (!editor.previousFilePath) return true;
+export const gotoLastNote: EditorCommand = ({ editor }) => {
+  if (!editor?.previousFilePath) return true;
 
   const store = useEditorStore.getState();
 

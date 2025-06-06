@@ -72,44 +72,44 @@ function emptyBlockSelectedDecorations(view: EditorView): DecorationSet {
   return builder.finish();
 }
 
-export const selectAll: EditorCommand =
-  () =>
-  ({ state, dispatch }) => {
-    const range = state.selection.asSingle().ranges[0];
-    const block = getActiveNoteBlock(state);
+export const selectAll: EditorCommand = ({ view }) => {
+  const { state, dispatch } = view;
 
-    // handle empty blocks separately
-    if (block.content.from === block.content.to) {
-      // check if C-a has already been pressed,
-      if (state.field(emptyBlockSelected, false)) {
-        // if the active block is already marked as selected we want to select the whole buffer
-      } else if (range.empty) {
-        return defaultSelectAll({ state, dispatch });
-        // if the empty block is not selected mark it as selected
-        // the reason we check for range.empty is if there is a an empty block at the end of the document
-        // and the users presses C-a twice so that the whole buffer gets selected, the active block will
-        // still be empty but we don't want to mark it as selected
-        dispatch({
-          effects: setEmptyBlockSelected.of(block.content.from)
-        });
-      }
-      return true;
-    }
+  const range = state.selection.asSingle().ranges[0];
+  const block = getActiveNoteBlock(state);
 
-    // check if all the text of the note is already selected, in which case we want to select all the text of the whole document
-    if (range.from === block.content.from && range.to === block.content.to) {
-      console.log("🪵default range.from", range.from, range.to);
-
+  // handle empty blocks separately
+  if (block.content.from === block.content.to) {
+    // check if C-a has already been pressed,
+    if (state.field(emptyBlockSelected, false)) {
+      // if the active block is already marked as selected we want to select the whole buffer
+    } else if (range.empty) {
       return defaultSelectAll({ state, dispatch });
+      // if the empty block is not selected mark it as selected
+      // the reason we check for range.empty is if there is a an empty block at the end of the document
+      // and the users presses C-a twice so that the whole buffer gets selected, the active block will
+      // still be empty but we don't want to mark it as selected
+      dispatch({
+        effects: setEmptyBlockSelected.of(block.content.from)
+      });
     }
-
-    console.log("🪵 block.content.from", block.content.from, block.content.to);
-    dispatch(
-      state.update({
-        selection: { anchor: block.content.from, head: block.content.to },
-        userEvent: "select"
-      })
-    );
-
     return true;
-  };
+  }
+
+  // check if all the text of the note is already selected, in which case we want to select all the text of the whole document
+  if (range.from === block.content.from && range.to === block.content.to) {
+    console.log("🪵default range.from", range.from, range.to);
+
+    return defaultSelectAll({ state, dispatch });
+  }
+
+  console.log("🪵 block.content.from", block.content.from, block.content.to);
+  dispatch(
+    state.update({
+      selection: { anchor: block.content.from, head: block.content.to },
+      userEvent: "select"
+    })
+  );
+
+  return true;
+};

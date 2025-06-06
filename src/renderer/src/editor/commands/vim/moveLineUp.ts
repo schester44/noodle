@@ -1,11 +1,11 @@
 import { NOTE_BLOCK_DELIMITER } from "@common/constants";
-import { EditorLessCommand } from "../types";
 import { EditorSelection, TransactionSpec } from "@codemirror/state";
+import { EditorCommand } from "../types";
 
 // One for metadata and one for the first block's delimiter.
 const FIRST_LINE_IN_DOCUMENT = 3;
 
-export const moveLineUp: EditorLessCommand = (view) => {
+export const moveLineUp: EditorCommand = ({ view }) => {
   const pos = view.state.selection.main.head;
 
   const currentLine = view.state.doc.lineAt(pos);

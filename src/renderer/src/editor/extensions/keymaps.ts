@@ -29,8 +29,7 @@ export const defaultKeyMaps: Record<Command | VimCommand, string> = {
   gotoLastNote: "Ctrl-6",
   newDailyNote: "Mod-d",
   newNote: "Mod-n",
-  browseNotes: "Mod-k",
-  openFileExplorer: "-"
+  browseNotes: "Mod-k"
 };
 
 export const DEFAULT_KEYMAPS = Object.entries(defaultKeyMaps).map(([command, keys]) => {
