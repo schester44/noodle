@@ -1,5 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { EditorInstance } from "../../editor/editor";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { useEditorStore } from "../../stores/editor-store";
 import { StatusBar } from "./StatusBar";
 import { useNoteStore } from "../../stores/note-store";
@@ -8,11 +7,10 @@ import { toggleCopilotExtension } from "../../editor/extensions/ai";
 import { updateEditorFont, updateEditorTheme } from "@/editor/theme";
 import { toggleVIMExtension } from "@/editor/extensions/vim";
 
-function useEditor({ fileName }: { fileName: string }) {
+function useEditor() {
   const [container, setContainer] = useState<HTMLElement | null>(null);
 
-  const editor = useEditorStore((state) => state.editors[fileName]);
-  const addEditor = useEditorStore((state) => state.addEditor);
+  const editor = useEditorStore((state) => state.editors[state.activeEditor]);
   const updateCurrentNote = useNoteStore((state) => state.updateCurrentNote);
 
   const isAIEnabled = useAppStore((state) => state.userSettings.ai.enabled);
@@ -20,14 +18,6 @@ function useEditor({ fileName }: { fileName: string }) {
   const font = useAppStore((state) => state.userSettings.font);
   const theme = useAppStore((state) => state.userSettings.theme);
   const userKeyBinds = useAppStore((state) => state.userSettings.keyBindings);
-
-  const ref = useRef(fileName);
-  const lastFileName = useRef<string | null>(null);
-
-  if (ref.current !== fileName) {
-    lastFileName.current = ref.current;
-    ref.current = fileName;
-  }
 
   useEffect(() => {
     if (!editor) return;
@@ -45,60 +35,31 @@ function useEditor({ fileName }: { fileName: string }) {
   }, [isAIEnabled, isVIMEnabled, editor]);
 
   useLayoutEffect(() => {
+    if (!container) return;
     // FIXME I don't think we should be destroying the Editor view just because the global state changed a little.
     // This will likely come back to bite us once we get more complex with the editor.
     // you can attach/detach the editor.view.dom to/from the container.. some issues wih selection state depending on note size
-    if (container) {
-      while (container.firstChild) {
-        container.removeChild(container.firstChild);
-      }
-
-      if (editor) {
-        container.appendChild(editor.view.dom);
-        editor.view.focus();
-      } else {
-        const editor = new EditorInstance({
-          path: fileName,
-          element: container,
-          actions: { updateCurrentNote },
-          isAIEnabled,
-          isVIMEnabled,
-          prevousFilePath: lastFileName.current,
-          initialKeyBindings: userKeyBinds,
-          initialTheme: {
-            theme,
-            ...font
-          }
-        });
-
-        addEditor(fileName, editor);
-        editor.view.focus();
-      }
+    while (container.firstChild) {
+      container.removeChild(container.firstChild);
     }
+
+    if (!editor) return;
+
+    container.appendChild(editor.view.dom);
+    editor.view.focus();
 
     return () => {
       if (editor?.view.dom) {
         container?.removeChild(editor?.view.dom);
       }
     };
-  }, [
-    editor,
-    addEditor,
-    fileName,
-    container,
-    updateCurrentNote,
-    isAIEnabled,
-    theme,
-    font,
-    isVIMEnabled,
-    userKeyBinds
-  ]);
+  }, [editor, container, updateCurrentNote, isAIEnabled, theme, font, isVIMEnabled, userKeyBinds]);
 
   return { setContainer, editor };
 }
 
-export function Editor({ fileName }: { fileName: string }) {
-  const { setContainer, editor } = useEditor({ fileName });
+export function Editor() {
+  const { setContainer, editor } = useEditor();
 
   const language = useNoteStore((state) => state.currentLanguage);
   const isAutoDetect = useNoteStore((state) => state.currentLanguageAuto);
@@ -120,7 +81,7 @@ export function Editor({ fileName }: { fileName: string }) {
   return (
     <div className="flex flex-col overflow-hidden h-full">
       <div className="flex-1 overflow-auto">
-        <div ref={setContainer} className="h-full" tabIndex={0} />
+        <div id="editor-container" ref={setContainer} className="h-full" tabIndex={0} />
       </div>
 
       <StatusBar language={language} onLangChange={setLanguage} isAutoDetect={isAutoDetect} />
