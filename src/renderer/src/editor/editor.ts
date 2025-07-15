@@ -38,18 +38,18 @@ export class EditorInstance {
   defaultBlockAutoDetect: boolean = true;
   keymapCompartment: Compartment;
   previousFilePath: string | null = null;
+  initialLineNumber: number | null = null;
 
   constructor({
-    element,
     path,
     actions,
     isAIEnabled,
     initialTheme,
     isVIMEnabled = false,
     initialKeyBindings = {},
-    prevousFilePath
+    prevousFilePath,
+    initialLineNumber = null
   }: {
-    element: Element;
     path: string;
     actions: NoteStoreActions;
     isAIEnabled: boolean;
@@ -57,10 +57,12 @@ export class EditorInstance {
     isVIMEnabled?: boolean;
     initialKeyBindings?: Record<string, string>;
     prevousFilePath: string | null;
+    initialLineNumber?: number;
   }) {
     this.path = path;
     this.keymapCompartment = new Compartment();
     this.previousFilePath = prevousFilePath;
+    this.initialLineNumber = initialLineNumber;
 
     registerVimKeymaps(this, initialKeyBindings);
 
@@ -95,8 +97,7 @@ export class EditorInstance {
     });
 
     this.view = new EditorView({
-      state: state,
-      parent: element
+      state: state
     });
 
     setupVimModeSync(this.view);
@@ -167,6 +168,14 @@ export class EditorInstance {
     ensureSyntaxTree(this.view.state, this.view.state.doc.length, 5000);
 
     requestAnimationFrame(() => {
+      if (this.initialLineNumber) {
+        const line = this.view.state.doc.line(this.initialLineNumber);
+
+        return this.view.dispatch({
+          effects: EditorView.scrollIntoView(line.from, { y: "center" })
+        });
+      }
+
       if (this.note?.cursors) {
         this.view.dispatch({
           selection: EditorSelection.fromJSON(this.note.cursors),

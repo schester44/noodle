@@ -58,7 +58,7 @@ function App(): React.JSX.Element {
 
   const handleSearchSelection = useCallback(
     (result: ParsedSearchResult) => {
-      setActiveEditor(result.file);
+      setActiveEditor(result.file, { initialLineNumber: result.line });
     },
     [setActiveEditor]
   );

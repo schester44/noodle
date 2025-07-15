@@ -3,6 +3,7 @@ import { EditorInstance } from "../editor/editor";
 import { produce } from "immer";
 import { useAppStore } from "./app-store";
 import { useNoteStore } from "./note-store";
+import { scrollLineIntoView } from "@/editor/commands/scrollIntoView";
 
 type EditorState = {
   activeEditor: string;
@@ -10,26 +11,18 @@ type EditorState = {
 };
 
 type EditorStore = EditorState & {
-  setActiveEditor: (path: string) => void;
+  setActiveEditor: (path: string, opts?: { initialLineNumber?: number }) => void;
 };
 
 export const useEditorStore = create<EditorStore>((set) => ({
   activeEditor: "default.txt",
   editors: {},
-  setActiveEditor: (path) => {
-    const container = document.getElementById("editor-container");
-
-    if (!container) {
-      console.error("Editor container not found");
-      return;
-    }
-
+  setActiveEditor: (path, opts) => {
     const appStore = useAppStore.getState();
     const noteStore = useNoteStore.getState();
 
     const editor = new EditorInstance({
       path,
-      element: container,
       actions: { updateCurrentNote: noteStore.updateCurrentNote },
       isAIEnabled: appStore.userSettings.ai.enabled,
       isVIMEnabled: appStore.userSettings.vim,
@@ -38,7 +31,8 @@ export const useEditorStore = create<EditorStore>((set) => ({
       initialTheme: {
         theme: appStore.userSettings.theme,
         ...appStore.userSettings.font
-      }
+      },
+      initialLineNumber: opts?.initialLineNumber
     });
 
     set(
