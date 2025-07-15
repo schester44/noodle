@@ -11,16 +11,6 @@ import {
   CommandList
 } from "./ui/command";
 
-/**
- * TODO:
- * - FOcus on the search result if its out of view and pressing ctrl+n or ctrl+p
- * - Styling (colors & layout)
- * - after opening a note, highlight the results in the note.
- *    - pass the query and the selected result.
- *      - focus on the selected result, highlight the multiple matches similar to local search.
- *      - should use similar API as local search. pressing escape should hide the selection.
- * */
-
 export function SearchOverlay({
   onSelection
 }: {
@@ -52,7 +42,7 @@ export function SearchOverlay({
       window.api.searchNotes(query).then((results) => {
         setResults(results);
       });
-    }, 300); // Adjust the debounce time as needed
+    }, 300);
   }
 
   function onOpenChange(open: boolean) {
@@ -81,9 +71,9 @@ export function SearchOverlay({
                     handleSelection(result);
                   }}
                 >
-                  <div>
-                    <div>{result.content}</div>
-                    <div>{result.file}</div>
+                  <div className="overflow-hidden">
+                    <div className="truncate">{highlightMatch(result.content, query)}</div>
+                    <div className="text-muted-foreground text-xs">{result.file}</div>
                   </div>
                 </CommandItem>
               );
@@ -107,11 +97,14 @@ export function highlightMatch(text: string, query: string): React.ReactNode {
 
   const start = match.index!;
   const end = start + match[0].length;
+  console.log("🪵 start", start, end);
+
+  const startingPosition = start > 60 ? start - 50 : 0;
 
   return (
     <>
-      {text.slice(0, start)}
-      <mark>{text.slice(start, end)}</mark>
+      {text.slice(startingPosition, start)}
+      <span className="border border-yellow-200 rounded">{text.slice(start, end)}</span>
       {text.slice(end)}
     </>
   );
