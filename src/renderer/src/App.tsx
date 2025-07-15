@@ -8,7 +8,6 @@ import { tinykeys } from "tinykeys";
 import { useNoteStore } from "./stores/note-store";
 import { cmToTinyKeys } from "./lib/utils";
 import { SearchOverlay } from "./components/search-overlay";
-import { set } from "react-hook-form";
 import { ParsedSearchResult } from "src/main/search";
 
 function App(): React.JSX.Element {
@@ -66,15 +65,15 @@ function App(): React.JSX.Element {
 
   if (!loaded) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="loader">Loader</div>
+      <div className="flex items-center justify-center h-full bg-[#1F1F28]">
+        <div className="loader">Loading</div>
       </div>
     );
   }
 
   return (
     <ThemeProvider>
-      <div className="h-full flex flex-col">
+      <div className="h-full flex flex-col fade-in-on-load">
         <SearchOverlay onSelection={handleSearchSelection} />
         <TitleBar
           bufferName={currentBufferName}
