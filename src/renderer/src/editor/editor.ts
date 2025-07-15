@@ -172,7 +172,7 @@ export class EditorInstance {
         const line = this.view.state.doc.line(this.initialLineNumber);
 
         return this.view.dispatch({
-          effects: EditorView.scrollIntoView(line.from, { y: "center" })
+          effects: EditorView.scrollIntoView(line.from, { y: "start" })
         });
       }
 
