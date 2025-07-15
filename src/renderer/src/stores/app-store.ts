@@ -5,17 +5,20 @@ import { Keybind } from "@/editor/extensions/keymaps";
 type AppState = {
   userSettings: FormInputs;
   isSettingsDialogOpen: boolean;
+  isSearching: boolean;
 };
 
 type AppStore = AppState & {
   saveUserSettings: (update: Partial<AppState["userSettings"]>) => void;
   toggleCopilot: () => void;
   toggleSettingsDialog: () => void;
+  toggleSearchDialog: () => void;
   updateKeyBinding: (opt: Pick<Keybind, "command" | "keys">) => void;
 };
 
 export const useAppStore = create<AppStore>((set) => ({
   isSettingsDialogOpen: false,
+  isSearching: false,
   userSettings: {
     libraryPath: "",
     autoUpdate: true,
@@ -79,7 +82,11 @@ export const useAppStore = create<AppStore>((set) => ({
         }
       };
     });
-  }
+  },
+  toggleSearchDialog: () =>
+    set((state) => ({
+      isSearching: !state.isSearching
+    }))
 }));
 
 useAppStore.subscribe((state) => {

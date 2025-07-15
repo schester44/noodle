@@ -10,7 +10,8 @@ export const IPC_CHANNELS = {
   GET_ALL_BUFFERS: "buffer:get-all",
   GET_APP_VERSION: "app:get-version",
   CHECK_FOR_UPDATES: "app:check-for-updates",
-  GET_FILE_TREE: "buffer:get-file-tree"
+  GET_FILE_TREE: "buffer:get-file-tree",
+  SEARCH_NOTES: "buffer:search-notes"
 } as const;
 
 export const NOTE_BLOCK_DELIMITER = "∞∞∞";

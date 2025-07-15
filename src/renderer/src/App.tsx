@@ -7,6 +7,9 @@ import { useEditorStore } from "./stores/editor-store";
 import { tinykeys } from "tinykeys";
 import { useNoteStore } from "./stores/note-store";
 import { cmToTinyKeys } from "./lib/utils";
+import { SearchOverlay } from "./components/search-overlay";
+import { set } from "react-hook-form";
+import { ParsedSearchResult } from "src/main/search";
 
 function App(): React.JSX.Element {
   const [loaded, setLoaded] = useState(false);
@@ -16,6 +19,7 @@ function App(): React.JSX.Element {
   const currentEditor = useEditorStore((state) => state.activeEditor);
   const currentBufferName = useNoteStore((state) => state.currentBufferName);
   const toggleSettingsDialog = useAppStore((state) => state.toggleSettingsDialog);
+  const toggleSearchDialog = useAppStore((state) => state.toggleSearchDialog);
 
   useEffect(() => {
     window.api.settings.loadConfig().then((config) => {
@@ -37,6 +41,9 @@ function App(): React.JSX.Element {
     const keyBind = cmToTinyKeys(newNoteKeyBind || "Meta+n");
 
     const unsub = tinykeys(window, {
+      "Meta+f": () => {
+        toggleSearchDialog();
+      },
       "Meta+,": () => {
         toggleSettingsDialog();
       },
@@ -48,7 +55,14 @@ function App(): React.JSX.Element {
     return () => {
       unsub();
     };
-  }, [handleNewNote, toggleSettingsDialog, newNoteKeyBind]);
+  }, [handleNewNote, toggleSettingsDialog, newNoteKeyBind, toggleSearchDialog]);
+
+  const handleSearchSelection = useCallback(
+    (result: ParsedSearchResult) => {
+      setActiveEditor(result.file);
+    },
+    [setActiveEditor]
+  );
 
   if (!loaded) {
     return (
@@ -61,6 +75,7 @@ function App(): React.JSX.Element {
   return (
     <ThemeProvider>
       <div className="h-full flex flex-col">
+        <SearchOverlay onSelection={handleSearchSelection} />
         <TitleBar
           bufferName={currentBufferName}
           activeEditor={currentEditor}

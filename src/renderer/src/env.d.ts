@@ -1,5 +1,6 @@
 /// <reference types="vite/client" />
 import { ElectronAPI } from "@electron-toolkit/preload";
+import { ParsedSearchResult } from "src/main/search";
 import { UserConfig } from "src/main/store/user-config";
 
 declare global {
@@ -8,6 +9,7 @@ declare global {
     api: {
       getAppVersion: () => Promise<{ latestVersion: string; currentVersion: string }>;
       getAppConfig: () => Promise<{ lastOpenedFile: string }>;
+      searchNotes: (query: string) => Promise<ParsedSearchResult[]>;
       checkForUpdates: () => Promise<void>;
       ai: {
         getResponse: (args: { before: string; after: string; language: string }) => Promise<string>;

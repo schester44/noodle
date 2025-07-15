@@ -12,6 +12,7 @@ import { checkForUpdates, getLatestVersionInfo } from "./releases";
 import { ipcMain } from "electron/main";
 import { IPC_CHANNELS } from "@common/constants";
 import { autoUpdater } from "electron-updater";
+import { searchNotes } from "./search";
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
@@ -115,6 +116,16 @@ async function init() {
     const latestVersion = await getLatestVersionInfo();
 
     return { currentVersion, latestVersion };
+  });
+
+  ipcMain.handle(IPC_CHANNELS.SEARCH_NOTES, async (_, query) => {
+    try {
+      const results = await searchNotes({ path: libraryPath, query });
+
+      return results;
+    } catch {
+      return [];
+    }
   });
 
   ipcMain.handle(IPC_CHANNELS.CHECK_FOR_UPDATES, () => {
