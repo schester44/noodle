@@ -1,9 +1,15 @@
 import { useAppStore } from "@/stores/app-store";
-import { Input } from "./ui/input";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { ParsedSearchResult } from "src/main/search";
-import { tinykeys } from "tinykeys";
-import clsx from "clsx";
+import {
+  Command,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList
+} from "./ui/command";
 
 /**
  * TODO:
@@ -25,7 +31,6 @@ export function SearchOverlay({
   const [results, setResults] = useState<Array<ParsedSearchResult>>([]);
   const toggleSearchDialog = useAppStore((state) => state.toggleSearchDialog);
   const [query, setQuery] = useState("");
-  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const handleSelection = useCallback(
     (result: ParsedSearchResult) => {
@@ -34,46 +39,6 @@ export function SearchOverlay({
     },
     [toggleSearchDialog, onSelection]
   );
-
-  useEffect(() => {
-    if (!isSearching) return;
-
-    const unsub = tinykeys(window, {
-      Escape: () => {
-        toggleSearchDialog();
-      },
-      "Control+n": () => {
-        console.log("Control+n pressed");
-        if (selectedIndex < results.length - 1) {
-          setSelectedIndex((prev) => prev + 1);
-        }
-
-        if (selectedIndex >= results.length - 1) {
-          setSelectedIndex(0);
-        }
-      },
-      "Control+p": () => {
-        if (selectedIndex > 0) {
-          setSelectedIndex((prev) => prev - 1);
-        }
-
-        if (selectedIndex <= 0) {
-          setSelectedIndex(results.length - 1);
-        }
-      },
-      Enter: () => {
-        if (results.length > 0) {
-          handleSelection(results[selectedIndex]);
-        }
-      }
-    });
-
-    return () => {
-      unsub();
-    };
-  }, [isSearching, toggleSearchDialog, setSelectedIndex, selectedIndex, handleSelection, results]);
-
-  if (!isSearching) return null;
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     const query = event.target.value;
@@ -90,33 +55,43 @@ export function SearchOverlay({
     }, 300); // Adjust the debounce time as needed
   }
 
-  return (
-    <div className="bg-[#1F1F28]/90 backdrop-blur-xs fixed inset-0 z-50 flex items-center justify-center pt-16">
-      <div className="w-full px-4 max-w-[800px]">
-        <div>
-          <Input autoFocus onChange={handleChange} value={query} />
-        </div>
+  function onOpenChange(open: boolean) {
+    toggleSearchDialog();
 
-        <div className="max-h-[80vh] overflow-y-auto mt-2">
-          {results.map((result, index) => {
-            const isSelected = index === selectedIndex;
-            return (
-              <div
-                key={index}
-                className={clsx(
-                  "p-2 border-b border-gray-200 hover:bg-gray-800",
-                  isSelected && "bg-gray-700"
-                )}
-                onClick={() => handleSelection(result)}
-              >
-                <div className="text-sm text-gray-500">{result.file}</div>
-                <div className="text-sm">{highlightMatch(result.content, query)}</div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
+    if (!open) {
+      setQuery("");
+      setResults([]);
+    }
+  }
+
+  return (
+    <CommandDialog open={isSearching} onOpenChange={onOpenChange}>
+      <Command value={query} onChange={handleChange} shouldFilter={false}>
+        <CommandInput placeholder="Search notes..." />
+        <CommandList>
+          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandGroup>
+            {results.map((result) => {
+              return (
+                <CommandItem
+                  className="flex items-center justify-between"
+                  key={result.file + result.line}
+                  value={result.file + result.line}
+                  onSelect={() => {
+                    handleSelection(result);
+                  }}
+                >
+                  <div>
+                    <div>{result.content}</div>
+                    <div>{result.file}</div>
+                  </div>
+                </CommandItem>
+              );
+            })}
+          </CommandGroup>
+        </CommandList>
+      </Command>
+    </CommandDialog>
   );
 }
 

@@ -1,7 +1,6 @@
 import { exec } from "child_process";
 import { untildify } from "./library";
 import { realpathSync } from "node:fs";
-import { NOTE_BLOCK_DELIMITER } from "@common/constants";
 
 export type ParsedSearchResult = {
   file: string;
@@ -27,13 +26,17 @@ export async function searchNotes({
   return new Promise((resolve, reject) => {
     exec(rgCommand, (error, stdout, stderr) => {
       if (error) return reject(stderr);
-      resolve(parseRipgrepJson(stdout.trim()));
+
+      // slicing because rg --max-count doesnt seem to work.
+      const results = parseRipgrepJson(stdout.trim()).slice(0, 20);
+      console.log("\x1b[33m%s\x1b[0m %s", "🪵 results", results);
+
+      resolve(results);
     });
   });
 }
 
 function parseRipgrepJson(output: string): ParsedSearchResult[] {
-  console.log("\x1b[33m%s\x1b[0m %s", "🪵 output", output);
   return output
     .split("\n")
     .map((line) => {
