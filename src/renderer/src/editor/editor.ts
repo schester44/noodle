@@ -22,7 +22,13 @@ import { NoteStoreActions } from "../stores/note-store";
 import { changeCurrentBlockLanguage } from "./commands/changeLanguage";
 import { languageDetection } from "./lang/detection/extension";
 import { aiExtension, copilotCompartment } from "./extensions/ai";
-import { setupVimModeSync, vimCompartment, vimExtension } from "./extensions/vim";
+import {
+  isInInsertMode,
+  setupVimModeSync,
+  vimCompartment,
+  vimExtension,
+  vimModeField
+} from "./extensions/vim";
 import { linksExtension } from "./extensions/links";
 import { markdown } from "@codemirror/lang-markdown";
 import { markdownExtensions } from "./extensions/markdown";
@@ -98,8 +104,22 @@ export class EditorInstance {
         linksExtension(),
         markdown(),
         markdownExtensions(),
+        keymap.of([
+          {
+            key: "Escape",
+            preventDefault: false,
+            run(view: EditorView) {
+              const mode = view.state.field(vimModeField, false);
+
+              if (mode === "normal") {
+                window.api.closeWindow();
+              }
+              return true;
+            }
+          }
+        ]),
         EditorView.domEventHandlers({
-          focus: (event, view) => {
+          focus: (_event, view) => {
             // This is needed to ensure the bufferName is updated when switching to an existing editor
             const state = view.state;
             if (!state.selection.main.head) return;

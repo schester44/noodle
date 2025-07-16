@@ -132,6 +132,13 @@ async function init() {
     autoUpdater.checkForUpdates();
   });
 
+  ipcMain.handle(IPC_CHANNELS.CLOSE_WINDOW, () => {
+    console.log("Closing window from main process");
+    if (notesWindow) {
+      notesWindow.close();
+    }
+  });
+
   checkForUpdates({ enabled: userConfig.get("autoUpdate") });
 }
 

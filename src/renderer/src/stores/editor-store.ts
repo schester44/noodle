@@ -3,7 +3,6 @@ import { EditorInstance } from "../editor/editor";
 import { produce } from "immer";
 import { useAppStore } from "./app-store";
 import { useNoteStore } from "./note-store";
-import { SearchQuery, setSearchQuery } from "@codemirror/search";
 import { getCM } from "@replit/codemirror-vim";
 
 type EditorState = {

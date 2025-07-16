@@ -4,6 +4,9 @@ import { getFonts } from "font-list";
 import { IPC_CHANNELS } from "@common/constants";
 
 const api: typeof window.api = {
+  closeWindow: () => {
+    return ipcRenderer.invoke(IPC_CHANNELS.CLOSE_WINDOW);
+  },
   searchNotes: (query: string) => {
     return ipcRenderer.invoke(IPC_CHANNELS.SEARCH_NOTES, query);
   },
