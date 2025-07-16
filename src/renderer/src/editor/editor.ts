@@ -26,6 +26,7 @@ import { setupVimModeSync, vimCompartment, vimExtension } from "./extensions/vim
 import { linksExtension } from "./extensions/links";
 import { markdown } from "@codemirror/lang-markdown";
 import { markdownExtensions } from "./extensions/markdown";
+import { getActiveNoteBlock, getBlockLineFromPos, getSelectionSize } from "./block/utils";
 
 export class EditorInstance {
   note: NoteFormat | null = null;
@@ -38,7 +39,8 @@ export class EditorInstance {
   defaultBlockAutoDetect: boolean = true;
   keymapCompartment: Compartment;
   previousFilePath: string | null = null;
-  initialLineNumber: number | null = null;
+  initialLineNumber: number | undefined;
+  onContentLoaded: () => void;
 
   constructor({
     path,
@@ -48,7 +50,8 @@ export class EditorInstance {
     isVIMEnabled = false,
     initialKeyBindings = {},
     prevousFilePath,
-    initialLineNumber = null
+    initialLineNumber,
+    onContentLoaded
   }: {
     path: string;
     actions: NoteStoreActions;
@@ -58,11 +61,13 @@ export class EditorInstance {
     initialKeyBindings?: Record<string, string>;
     prevousFilePath: string | null;
     initialLineNumber?: number;
+    onContentLoaded?: () => void;
   }) {
     this.path = path;
     this.keymapCompartment = new Compartment();
     this.previousFilePath = prevousFilePath;
     this.initialLineNumber = initialLineNumber;
+    this.onContentLoaded = onContentLoaded || (() => {});
 
     registerVimKeymaps(this, initialKeyBindings);
 
@@ -92,7 +97,30 @@ export class EditorInstance {
         copilotCompartment.of([isAIEnabled ? aiExtension() : []]),
         linksExtension(),
         markdown(),
-        markdownExtensions()
+        markdownExtensions(),
+        EditorView.domEventHandlers({
+          focus: (event, view) => {
+            // This is needed to ensure the bufferName is updated when switching to an existing editor
+            const state = view.state;
+            if (!state.selection.main.head) return;
+
+            const cursorLine = getBlockLineFromPos(state, state.selection.main.head);
+            const selectionSize = state.selection.ranges
+              .map((sel) => getSelectionSize(state, sel))
+              .reduce((a, b) => a + b, 0);
+            const block = getActiveNoteBlock(state);
+
+            if (block && cursorLine) {
+              actions.updateCurrentNote({
+                cursorLine,
+                selectionSize,
+                language: block.language.name,
+                languageAuto: block.language.auto,
+                bufferName: this.name
+              });
+            }
+          }
+        })
       ]
     });
 
@@ -171,23 +199,25 @@ export class EditorInstance {
       if (this.initialLineNumber) {
         const line = this.view.state.doc.line(this.initialLineNumber);
 
-        return this.view.dispatch({
+        this.view.dispatch({
           effects: EditorView.scrollIntoView(line.from, { y: "start" })
         });
+      } else {
+        if (this.note?.cursors) {
+          this.view.dispatch({
+            selection: EditorSelection.fromJSON(this.note.cursors),
+            scrollIntoView: true
+          });
+        } else {
+          // if metadata doesn't contain cursor position, we set the cursor to the end of the buffer
+          this.view.dispatch({
+            selection: { anchor: this.view.state.doc.length, head: this.view.state.doc.length },
+            scrollIntoView: true
+          });
+        }
       }
 
-      if (this.note?.cursors) {
-        this.view.dispatch({
-          selection: EditorSelection.fromJSON(this.note.cursors),
-          scrollIntoView: true
-        });
-      } else {
-        // if metadata doesn't contain cursor position, we set the cursor to the end of the buffer
-        this.view.dispatch({
-          selection: { anchor: this.view.state.doc.length, head: this.view.state.doc.length },
-          scrollIntoView: true
-        });
-      }
+      this.onContentLoaded();
     });
   }
 

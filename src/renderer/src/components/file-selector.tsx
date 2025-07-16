@@ -13,6 +13,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { tinykeys } from "tinykeys";
 import { getBrowseNotesKeyBind } from "@/editor/extensions/keymaps";
+import { useEditorStore } from "@/stores/editor-store";
 
 export function FileSelector({
   value,
@@ -48,6 +49,16 @@ export function FileSelector({
       unsub();
     };
   }, [userKeyBinds]);
+
+  const editor = useEditorStore((state) => state.editors[state.activeEditor]);
+
+  useEffect(() => {
+    if (!editor) return;
+
+    if (!open) {
+      editor.view.focus();
+    }
+  }, [open, editor]);
 
   if (!files.length) return;
 

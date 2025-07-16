@@ -57,8 +57,11 @@ function App(): React.JSX.Element {
   }, [handleNewNote, toggleSettingsDialog, newNoteKeyBind, toggleSearchDialog]);
 
   const handleSearchSelection = useCallback(
-    (result: ParsedSearchResult) => {
-      setActiveEditor(result.file, { initialLineNumber: result.line });
+    (result: ParsedSearchResult & { query: string }) => {
+      setActiveEditor(result.file, {
+        initialLineNumber: result.line,
+        initialWordsToHighlight: [result.query]
+      });
     },
     [setActiveEditor]
   );
@@ -82,7 +85,7 @@ function App(): React.JSX.Element {
           onNoteSelect={setActiveEditor}
         />
         <div className="flex-1 overflow-hidden">
-          <Editor fileName={currentEditor} />
+          <Editor />
         </div>
       </div>
     </ThemeProvider>

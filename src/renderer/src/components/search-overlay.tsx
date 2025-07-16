@@ -1,5 +1,5 @@
 import { useAppStore } from "@/stores/app-store";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ParsedSearchResult } from "src/main/search";
 import {
   Command,
@@ -10,11 +10,12 @@ import {
   CommandItem,
   CommandList
 } from "./ui/command";
+import { useEditorStore } from "@/stores/editor-store";
 
 export function SearchOverlay({
   onSelection
 }: {
-  onSelection: (result: ParsedSearchResult) => void;
+  onSelection: (result: ParsedSearchResult & { query: string }) => void;
 }): React.JSX.Element | null {
   const isSearching = useAppStore((state) => state.isSearching);
   const debounce = useRef<NodeJS.Timeout | null>(null);
@@ -22,12 +23,20 @@ export function SearchOverlay({
   const toggleSearchDialog = useAppStore((state) => state.toggleSearchDialog);
   const [query, setQuery] = useState("");
 
+  // Somewhat hacky but will work for now.. focus the editor when the search dialog is closed
+  const editor = useEditorStore((state) => state.editors[state.activeEditor]);
+  useEffect(() => {
+    if (editor && !isSearching) {
+      editor.view.focus();
+    }
+  }, [isSearching, editor]);
+
   const handleSelection = useCallback(
     (result: ParsedSearchResult) => {
       toggleSearchDialog();
-      onSelection(result);
+      onSelection({ ...result, query });
     },
-    [toggleSearchDialog, onSelection]
+    [toggleSearchDialog, onSelection, query]
   );
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -97,7 +106,6 @@ export function highlightMatch(text: string, query: string): React.ReactNode {
 
   const start = match.index!;
   const end = start + match[0].length;
-  console.log("🪵 start", start, end);
 
   const startingPosition = start > 60 ? start - 50 : 0;
 

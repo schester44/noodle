@@ -11,7 +11,6 @@ function useEditor() {
   const [container, setContainer] = useState<HTMLElement | null>(null);
 
   const editor = useEditorStore((state) => state.editors[state.activeEditor]);
-  const updateCurrentNote = useNoteStore((state) => state.updateCurrentNote);
 
   const isAIEnabled = useAppStore((state) => state.userSettings.ai.enabled);
   const isVIMEnabled = useAppStore((state) => state.userSettings.vim);
@@ -53,7 +52,7 @@ function useEditor() {
         container?.removeChild(editor?.view.dom);
       }
     };
-  }, [editor, container, updateCurrentNote, isAIEnabled, theme, font, isVIMEnabled, userKeyBinds]);
+  }, [editor, container, isAIEnabled, theme, font, isVIMEnabled, userKeyBinds]);
 
   return { setContainer, editor };
 }
