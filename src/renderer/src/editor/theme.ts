@@ -152,6 +152,12 @@ export const baseTheme = EditorView.theme({
     opacity: 0,
     transition: "opacity 250ms"
   },
+  ".cm-foldPlaceholder": {
+    background: "#53536C",
+    borderColor: "#53536C",
+    marginLeft: "4px",
+    color: "black"
+  },
   ".cm-gutters:hover .cm-gutterElement": {
     opacity: 1
   },

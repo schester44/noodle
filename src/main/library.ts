@@ -63,15 +63,19 @@ export class FileLibrary {
   }
 
   async createNew(opts?: { file?: string; template?: "initial" | "daily" }) {
-    const newFileName = opts?.file || formatDate(new Date()) + ".txt";
+    const fileName = opts?.file || formatDate(new Date()) + ".txt";
 
-    const newFilePath = join(this.basePath, newFileName);
+    const newFilePath = join(this.basePath, fileName);
 
     if (fileExists(newFilePath)) {
       return { path: newFilePath };
     }
 
-    fs.writeFileSync(newFilePath, initialContent(newFileName, opts?.template), "utf8");
+    fs.writeFileSync(
+      newFilePath,
+      initialContent(fileName.replace(".txt", ""), opts?.template),
+      "utf8"
+    );
 
     this.files[newFilePath] = new NoteBuffer(newFilePath);
 
