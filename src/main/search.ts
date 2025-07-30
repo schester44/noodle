@@ -1,6 +1,8 @@
 import { exec } from "child_process";
 import { untildify } from "./library";
 import { realpathSync } from "node:fs";
+import { getResourceFilePath } from "./utils/get-resource-file";
+import log from "electron-log";
 
 export type ParsedSearchResult = {
   file: string;
@@ -21,15 +23,21 @@ export async function searchNotes({
   path: string;
   query: string;
 }): Promise<ParsedSearchResult[]> {
-  const rgCommand = `rg -i --json "${query}" ${basepath(path)}`;
+  const rgPath = getResourceFilePath("rg");
+
+  const rgCommand = `${rgPath} -i --json "${query}" ${basepath(path)}`;
 
   return new Promise((resolve, reject) => {
+    log.debug("Searching notes with command:", rgCommand);
+
     exec(rgCommand, (error, stdout, stderr) => {
+      log.debug("Ripgrep output:", stdout);
+      log.debug("Ripgrep error output:", stderr);
+      log.debug("Ripgrep error:", error);
       if (error) return reject(stderr);
 
       // slicing because rg --max-count doesnt seem to work.
       const results = parseRipgrepJson(stdout.trim()).slice(0, 20);
-      console.log("\x1b[33m%s\x1b[0m %s", "🪵 results", results);
 
       resolve(results);
     });

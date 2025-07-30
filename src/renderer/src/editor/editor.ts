@@ -22,13 +22,7 @@ import { NoteStoreActions } from "../stores/note-store";
 import { changeCurrentBlockLanguage } from "./commands/changeLanguage";
 import { languageDetection } from "./lang/detection/extension";
 import { aiExtension, copilotCompartment } from "./extensions/ai";
-import {
-  isInInsertMode,
-  setupVimModeSync,
-  vimCompartment,
-  vimExtension,
-  vimModeField
-} from "./extensions/vim";
+import { setupVimModeSync, vimCompartment, vimExtension, vimModeField } from "./extensions/vim";
 import { linksExtension } from "./extensions/links";
 import { markdown } from "@codemirror/lang-markdown";
 import { markdownExtensions } from "./extensions/markdown";

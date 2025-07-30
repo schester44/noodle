@@ -1,18 +1,19 @@
 import { App, app, BrowserWindow, nativeImage } from "electron";
 import { electronApp, optimizer } from "@electron-toolkit/utils";
 
+import log from "electron-log";
 import { createWindow, getBackgroundColor } from "./window";
 import { FileLibrary, setupFileLibraryEventListeners } from "./library";
 import { store as userConfig } from "./store/user-config";
 import { getLibraryPath } from "./utils/get-library-path";
 import { setupSettingsEventListeners } from "./settings";
 import { setupAIEventListeners } from "./extensions/ai";
-import path from "node:path";
 import { checkForUpdates, getLatestVersionInfo } from "./releases";
 import { ipcMain } from "electron/main";
 import { IPC_CHANNELS } from "@common/constants";
 import { autoUpdater } from "electron-updater";
 import { searchNotes } from "./search";
+import { getResourceFilePath } from "./utils/get-resource-file";
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
@@ -29,10 +30,8 @@ async function init() {
 
   app.setAsDefaultProtocolClient("noodle");
 
-  const isDev = !app.isPackaged;
-  const iconPath = isDev
-    ? path.join(__dirname, "../../build/icon.icns")
-    : path.join(process.resourcesPath, "icon.icns");
+  // FIXME: This doesn't load the icon when in development mode.
+  const iconPath = getResourceFilePath("icon.icns");
 
   const icon = nativeImage.createFromPath(iconPath);
 
@@ -123,7 +122,9 @@ async function init() {
       const results = await searchNotes({ path: libraryPath, query });
 
       return results;
-    } catch {
+    } catch (error) {
+      log.error("Error searching notes:", error);
+
       return [];
     }
   });
