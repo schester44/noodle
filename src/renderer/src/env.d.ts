@@ -31,7 +31,9 @@ declare global {
         }) => Promise<{ path: string }>;
         load: (file: string) => Promise<string>;
         save: (file: string, content: string) => Promise<void>;
-        getAll: () => Promise<Array<{ fullpath: string; path: string; file: string }>>;
+        getAll: () => Promise<
+          Array<{ fullpath: string; path: string; file: string; name: string; tags: string[] }>
+        >;
         getFileTree: () => Promise<FileTreeItem>;
       };
     };

@@ -28,7 +28,9 @@ export function FileSelector({
 }) {
   const [open, setOpen] = useState(false);
 
-  const [files, setFiles] = useState<{ fullpath: string; path: string; file: string }[]>([]);
+  const [files, setFiles] = useState<
+    { fullpath: string; path: string; file: string; name: string; tags: string[] }[]
+  >([]);
 
   useEffect(() => {
     window.api.buffer.getAll().then((files) => {
@@ -94,7 +96,12 @@ export function FileSelector({
                       )}
                     />
 
-                    <div>{file.file}</div>
+                    <div>
+                      <div>{file.name}</div>
+                      {file.name !== file.file && (
+                        <div className="text-muted-foreground text-xs">{file.file}</div>
+                      )}
+                    </div>
                   </div>
                 </CommandItem>
               ))}
