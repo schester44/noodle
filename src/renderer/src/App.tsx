@@ -62,7 +62,8 @@ function App(): React.JSX.Element {
     (result: ParsedSearchResult & { query: string }) => {
       setActiveEditor(result.file, {
         initialLineNumber: result.line,
-        initialWordsToHighlight: [result.query]
+        initialWordsToHighlight: [result.query],
+        query: result.query
       });
     },
     [setActiveEditor]

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { EditorInstance } from "../editor/editor";
+import { EditorView } from "@codemirror/view";
 import { produce } from "immer";
 import { useAppStore } from "./app-store";
 import { useNoteStore } from "./note-store";
@@ -13,7 +14,7 @@ type EditorState = {
 type EditorStore = EditorState & {
   setActiveEditor: (
     path: string,
-    opts?: { initialLineNumber?: number; initialWordsToHighlight?: string[] }
+    opts?: { initialLineNumber?: number; initialWordsToHighlight?: string[]; query?: string }
   ) => void;
 };
 
@@ -42,6 +43,14 @@ export const useEditorStore = create<EditorStore>((set) => ({
             ...(opts?.initialWordsToHighlight
               ? {
                   onContentLoaded: () => {
+                    if (opts?.query && opts?.initialLineNumber) {
+                      moveSelectionToFirstMatch({
+                        view: editor.view,
+                        query: opts.query,
+                        initialLineNumber: opts.initialLineNumber
+                      });
+                    }
+
                     opts.initialWordsToHighlight?.forEach((word) => {
                       const cm = getCM(editor.view);
 
@@ -52,7 +61,7 @@ export const useEditorStore = create<EditorStore>((set) => ({
 
                       const query = new RegExp(word, "g");
 
-                      // FIXME: This works but it doesn't clear on escape.
+                      // FIXME: This works but it doesn't clear on escape because we're using a vim extension method and vim is expecting highlights to be added in a different way.
                       cm.addOverlay({ query });
                     });
                   }
@@ -72,3 +81,29 @@ export const useEditorStore = create<EditorStore>((set) => ({
     );
   }
 }));
+
+function moveSelectionToFirstMatch({
+  view,
+  query,
+  initialLineNumber
+}: {
+  view: EditorView;
+  query: string;
+  initialLineNumber: number;
+}) {
+  const line = view.state.doc.line(initialLineNumber);
+
+  const searchRegex = new RegExp(query, "g");
+  const matchOnLine = line.text.match(searchRegex);
+
+  if (matchOnLine?.[0]) {
+    const indexOfMatch = line.text.indexOf(matchOnLine[0]);
+
+    view.dispatch({
+      selection: {
+        anchor: line.from + indexOfMatch,
+        head: line.from + indexOfMatch
+      }
+    });
+  }
+}

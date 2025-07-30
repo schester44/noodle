@@ -54,7 +54,7 @@ export class EditorInstance {
     onContentLoaded
   }: {
     path: string;
-    actions: NoteStoreActions;
+    actions: Pick<NoteStoreActions, "updateCurrentNote">;
     isAIEnabled: boolean;
     initialTheme: { theme: string; fontSize: number; fontFamily: string; fontWeight: string };
     isVIMEnabled?: boolean;
