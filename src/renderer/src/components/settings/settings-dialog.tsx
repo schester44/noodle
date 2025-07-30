@@ -55,7 +55,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[100vw] max-h-[100vh] overflow-hidden p-0 w-full h-full rounded-none">
+      <DialogContent className="overflow-hidden p-0 w-screen h-screen rounded-none max-w-screen max-h-screen min-w-screen min-h-screen">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}

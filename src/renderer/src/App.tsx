@@ -19,6 +19,8 @@ function App(): React.JSX.Element {
   const currentBufferName = useNoteStore((state) => state.currentBufferName);
   const toggleSettingsDialog = useAppStore((state) => state.toggleSettingsDialog);
   const toggleSearchDialog = useAppStore((state) => state.toggleSearchDialog);
+  const updateCurrentBufferName = useNoteStore((state) => state.updateCurrentBufferName);
+  const editor = useEditorStore((state) => state.editors[currentEditor]);
 
   useEffect(() => {
     window.api.settings.loadConfig().then((config) => {
@@ -83,6 +85,10 @@ function App(): React.JSX.Element {
           activeEditor={currentEditor}
           onNewNote={handleNewNote}
           onNoteSelect={setActiveEditor}
+          onBufferNameChange={(name) => {
+            updateCurrentBufferName(name);
+            editor.updateNoteName(name);
+          }}
         />
         <div className="flex-1 overflow-hidden">
           <Editor />

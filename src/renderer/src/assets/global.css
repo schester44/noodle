@@ -27,6 +27,10 @@ body,
   -webkit-user-select: none;
 }
 
+.no-drag-region {
+  -webkit-app-region: no-drag;
+}
+
 *,
 a,
 button {

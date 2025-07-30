@@ -17,6 +17,7 @@ export type NoteStoreActions = {
     languageAuto: boolean;
     bufferName: string;
   }) => void;
+  updateCurrentBufferName: (bufferName: string) => void;
 };
 
 type NoteStore = NoteState & NoteStoreActions;
@@ -35,6 +36,13 @@ export const useNoteStore = create<NoteStore>((set) => ({
         state.currentLanguage = update.language;
         state.currentLanguageAuto = update.languageAuto;
         state.currentBufferName = update.bufferName;
+      })
+    );
+  },
+  updateCurrentBufferName: (bufferName) => {
+    set(
+      produce((state: NoteStore) => {
+        state.currentBufferName = bufferName;
       })
     );
   }

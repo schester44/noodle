@@ -166,6 +166,7 @@ export class EditorInstance {
 
     const content = this.getContent();
 
+    console.log("\x1b[33m%s\x1b[0m", "🪵 this.diskContent", this.diskContent);
     if (content === this.diskContent) return;
     this.diskContent = content;
 
@@ -187,6 +188,13 @@ export class EditorInstance {
     }
 
     return this.note.serialize();
+  }
+
+  updateNoteName(name: string) {
+    if (!this.note) return;
+
+    this.note.metadata.name = name;
+    this.name = name;
   }
 
   setContent(content: string) {

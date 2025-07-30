@@ -1,18 +1,88 @@
-import { NotebookPenIcon, PlusIcon } from "lucide-react";
+import { Edit, NotebookPenIcon, PlusIcon } from "lucide-react";
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { FileSelector } from "./file-selector";
 import { useAppStore } from "@/stores/app-store";
+import { useEffect, useRef, useState } from "react";
+
+function BufferName({
+  name,
+  onNameChange
+}: {
+  name: string;
+  onNameChange: (name: string) => void;
+}) {
+  const [isEditing, setEditing] = useState(false);
+  const [tempValue, setTempValue] = useState(name);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (inputRef.current && !inputRef.current.contains(event.target as Node)) {
+        setEditing(false);
+        setTempValue(name);
+      }
+    }
+
+    if (isEditing) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isEditing, name]);
+
+  function handleNameChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setTempValue(event.target.value);
+  }
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Escape") {
+      setEditing(false);
+      setTempValue(name);
+    } else if (e.key === "Enter") {
+      setEditing(false);
+      onNameChange(tempValue);
+    }
+  }
+
+  return (
+    <div className="flex items-center justify-center flex-1 drag-region">
+      {isEditing ? (
+        <div className="no-drag-region w-full pl-20 py-1 flex justify-center">
+          <input
+            ref={inputRef}
+            autoFocus
+            value={tempValue}
+            onChange={handleNameChange}
+            className="text-sm text-[#53536C] border-none outline rounded pl-2"
+            onKeyDown={handleKeyDown}
+          />
+        </div>
+      ) : (
+        <div className="text-sm text-[#53536C] drag-region">{name}</div>
+      )}
+
+      <div className="w-3 pl-1 group/icon" onClick={() => setEditing(true)}>
+        <Edit className="text-[#53536c] w-3 no-drag-region hover:text-muted-foreground group-hover/icon:opacity-75 opacity-0" />
+      </div>
+    </div>
+  );
+}
 
 export function TitleBar({
   activeEditor,
   bufferName,
   onNewNote,
-  onNoteSelect
+  onNoteSelect,
+  onBufferNameChange
 }: {
   activeEditor: string;
   bufferName: string;
   onNewNote: () => void;
   onNoteSelect: (file: string) => void;
+  onBufferNameChange: (name: string) => void;
 }) {
   const userKeyBinds = useAppStore((state) => state.userSettings.keyBindings);
 
@@ -24,7 +94,7 @@ export function TitleBar({
       <div className="bg-[#1F1F28] flex items-center justify-between text-white pt-1 px-3 pb-2 group">
         <div className="drag-region" />
 
-        <div className="text-sm text-[#53536C] flex-1 drag-region text-center">{bufferName}</div>
+        <BufferName name={bufferName} onNameChange={onBufferNameChange} />
 
         <div className="flex items-center gap-2 text-[#53536C]">
           <div>
