@@ -1,8 +1,13 @@
-import { promptPlugin, showPromptEffect } from "../extensions/ai/inline-prompting";
+import { useAppStore } from "@/stores/app-store";
+import { promptPlugin, showPromptEffect } from "../extensions/ai/prompt-extension";
 import { EditorCommand } from "./types";
 
 export const startPrompt: EditorCommand = async ({ editor }) => {
   if (!editor) return false;
+
+  const isEnabled = useAppStore.getState().userSettings.ai.features.promptEnabled;
+
+  if (!isEnabled) return false;
 
   const selection = editor.view.state.selection.main;
   const selectedText = selection.empty

@@ -17,7 +17,11 @@ export const formSchema = z.object({
   ai: z.object({
     enabled: z.boolean().default(false),
     apiKey: z.string().min(0).startsWith("sk-").default(""),
-    model: z.string().default("gpt-3.5-turbo")
+    model: z.string().default("gpt-3.5-turbo"),
+    features: z.object({
+      promptEnabled: z.boolean().default(false),
+      autoCompleteEnabled: z.boolean().default(false)
+    })
   }),
   keyBindings: z.record(z.string())
 });

@@ -3,9 +3,10 @@ import { useEditorStore } from "../../stores/editor-store";
 import { StatusBar } from "./StatusBar";
 import { useNoteStore } from "../../stores/note-store";
 import { useAppStore } from "../../stores/app-store";
-import { toggleCopilotExtension } from "../../editor/extensions/ai";
+import { toggleAutoCompletionExtension } from "../../editor/extensions/ai/auto-completion-extension";
 import { updateEditorFont, updateEditorTheme } from "@/editor/theme";
 import { toggleVIMExtension } from "@/editor/extensions/vim";
+import { toggleAIPromptExtension } from "@/editor/extensions/ai/prompt-extension";
 
 function useEditor() {
   const [container, setContainer] = useState<HTMLElement | null>(null);
@@ -13,6 +14,7 @@ function useEditor() {
   const editor = useEditorStore((state) => state.editors[state.activeEditor]);
 
   const isAIEnabled = useAppStore((state) => state.userSettings.ai.enabled);
+  const aiFeatures = useAppStore((state) => state.userSettings.ai.features);
   const isVIMEnabled = useAppStore((state) => state.userSettings.vim);
   const font = useAppStore((state) => state.userSettings.font);
   const theme = useAppStore((state) => state.userSettings.theme);
@@ -29,9 +31,10 @@ function useEditor() {
   useEffect(() => {
     if (!editor) return;
 
-    toggleCopilotExtension(editor.view, isAIEnabled);
+    toggleAutoCompletionExtension(editor.view, isAIEnabled && aiFeatures.autoCompleteEnabled);
+    toggleAIPromptExtension(editor.view, isAIEnabled && aiFeatures.promptEnabled);
     toggleVIMExtension(editor.view, isVIMEnabled);
-  }, [isAIEnabled, isVIMEnabled, editor]);
+  }, [isAIEnabled, isVIMEnabled, editor, aiFeatures]);
 
   useLayoutEffect(() => {
     if (!container) return;

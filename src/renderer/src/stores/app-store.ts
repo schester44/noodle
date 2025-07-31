@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { FormInputs } from "../components/settings/schema";
 import { Keybind } from "@/editor/extensions/keymaps";
 
-type AppState = {
+export type AppState = {
   userSettings: FormInputs;
   isSettingsDialogOpen: boolean;
   isSearching: boolean;
@@ -36,7 +36,11 @@ export const useAppStore = create<AppStore>((set) => ({
     ai: {
       enabled: false,
       apiKey: "",
-      model: "gpt-3.5-turbo"
+      model: "gpt-3.5-turbo",
+      features: {
+        promptEnabled: true,
+        autoCompleteEnabled: true
+      }
     },
     keyBindings: {}
   },

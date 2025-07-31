@@ -99,6 +99,23 @@ const schema: ElectronStore.Schema<UserConfig> = {
       model: {
         type: "string",
         default: "gpt-3.5-turbo"
+      },
+      features: {
+        type: "object",
+        default: {
+          promptEnabled: true,
+          autoCompleteEnabled: true
+        },
+        properties: {
+          promptEnabled: {
+            type: "boolean",
+            default: true
+          },
+          autoCompleteEnabled: {
+            type: "boolean",
+            default: true
+          }
+        }
       }
     }
   }

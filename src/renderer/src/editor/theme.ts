@@ -31,7 +31,7 @@ export const darkTheme = EditorView.theme(
       textDecoration: "underline",
       cursor: "pointer"
     },
-    [`&.ai-prompt-active .cm-fat-cursor`]: {
+    [`&.cm-prompt-active .cm-fat-cursor`]: {
       display: "none !important"
     },
     [`&.cm-meta-hover .${APPNAME}-link:hover`]: {

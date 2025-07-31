@@ -21,13 +21,17 @@ import { emitCursorChange } from "./extensions/emit-cursor-change";
 import { NoteStoreActions } from "../stores/note-store";
 import { changeCurrentBlockLanguage } from "./commands/changeLanguage";
 import { languageDetection } from "./lang/detection/extension";
-import { aiExtension, copilotCompartment } from "./extensions/ai";
+import {
+  aiAutoCompletionExtension,
+  aiAutoCompletionCompartment
+} from "./extensions/ai/auto-completion-extension";
 import { setupVimModeSync, vimCompartment, vimExtension, vimModeField } from "./extensions/vim";
 import { linksExtension } from "./extensions/links";
 import { markdown } from "@codemirror/lang-markdown";
 import { markdownExtensions } from "./extensions/markdown";
 import { getActiveNoteBlock, getBlockLineFromPos, getSelectionSize } from "./block/utils";
-import { inlinePrompting } from "./extensions/ai/inline-prompting";
+import { aiPromptCompartment, aiPromptExtension } from "./extensions/ai/prompt-extension";
+import { AppState } from "@/stores/app-store";
 
 export class EditorInstance {
   note: NoteFormat | null = null;
@@ -46,8 +50,8 @@ export class EditorInstance {
   constructor({
     path,
     actions,
-    isAIEnabled,
     initialTheme,
+    ai,
     isVIMEnabled = false,
     initialKeyBindings = {},
     prevousFilePath,
@@ -56,7 +60,7 @@ export class EditorInstance {
   }: {
     path: string;
     actions: Pick<NoteStoreActions, "updateCurrentNote">;
-    isAIEnabled: boolean;
+    ai: AppState["userSettings"]["ai"];
     initialTheme: { theme: string; fontSize: number; fontFamily: string; fontWeight: string };
     isVIMEnabled?: boolean;
     initialKeyBindings?: Record<string, string>;
@@ -95,11 +99,16 @@ export class EditorInstance {
         autoSaveContent(this, 300),
         emitCursorChange({ editor: this, updateCurrentNote: actions.updateCurrentNote }),
         languageDetection({ path, editor: this }),
-        copilotCompartment.of([isAIEnabled ? aiExtension() : []]),
+        aiAutoCompletionCompartment.of([
+          ai.enabled && ai.features.autoCompleteEnabled ? aiAutoCompletionExtension() : []
+        ]),
+        aiPromptCompartment.of([
+          ai.enabled && ai.features.promptEnabled ? aiPromptExtension() : []
+        ]),
+        aiPromptExtension(),
         linksExtension(),
         markdown(),
         markdownExtensions(),
-        inlinePrompting(),
         keymap.of([
           {
             key: "Escape",

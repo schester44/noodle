@@ -31,7 +31,7 @@ export const useEditorStore = create<EditorStore>((set) => ({
           const editor = new EditorInstance({
             path,
             actions: { updateCurrentNote: noteStore.updateCurrentNote },
-            isAIEnabled: appStore.userSettings.ai.enabled,
+            ai: appStore.userSettings.ai,
             isVIMEnabled: appStore.userSettings.vim,
             prevousFilePath: null,
             initialKeyBindings: appStore.userSettings.keyBindings,

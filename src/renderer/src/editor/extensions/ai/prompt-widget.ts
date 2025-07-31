@@ -21,49 +21,33 @@ export class PromptWidget extends WidgetType {
   }
 
   toDOM() {
-    const container = document.createElement("div");
-    container.className = "ai-prompt-widget";
-    container.style.cssText = `
-      display: flex;
-      align-items: center;
-    `;
+    const widget = document.createElement("div");
+
+    widget.className = "ai-prompt-widget";
 
     if (this.isLoading) {
-      container.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 8px; color: var(--muted-foreground);">
+      widget.innerHTML = `
+        <div class="ai-prompt-loader">
           <div class="animate-spin">⟳</div>
           <span>Working...</span>
         </div>
       `;
     } else {
-      const header = document.createElement("div");
-      header.style.cssText = `
-       margin-right: 8px;
-      `;
+      const container = document.createElement("div");
+      const icon = document.createElement("div");
 
-      header.innerHTML = `<span>✨</span>`;
+      icon.className = "ai-prompt-icon";
+      icon.innerHTML = `<span>✨</span>`;
 
-      container.appendChild(header);
+      container.className = "ai-prompt-container";
+      container.appendChild(icon);
 
       const textarea = document.createElement("textarea");
       textarea.placeholder = this.selectedText
         ? "What would you like to do?"
         : "Ask AI for an assist...";
-      textarea.style.cssText = `
-        width: 100%;
-        min-height: 25px;
-        padding: 8px;
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        background: var(--background);
-        color: var(--foreground);
-        font-size: 14px;
-        font-family: inherit;
-        outline: none;
-        resize: vertical;
-        line-height: 1;
-        box-shadow: 0 0 3px 2px rgba(147, 51, 234, 0.3);
-      `;
+
+      textarea.className = "ai-prompt-input";
 
       textarea.spellcheck = false;
       textarea.rows = 1;
@@ -77,6 +61,7 @@ export class PromptWidget extends WidgetType {
       textarea.addEventListener("input", autoResize);
 
       container.appendChild(textarea);
+      widget.appendChild(container);
 
       // Focus the textarea immediately
       setTimeout(() => {
@@ -105,6 +90,6 @@ export class PromptWidget extends WidgetType {
       });
     }
 
-    return container;
+    return widget;
   }
 }

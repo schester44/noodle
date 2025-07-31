@@ -13,14 +13,17 @@ export function setupAIEventListeners({
       {
         role: "system",
         content: `You are helping a user write or improve their notes. Here’s the current context:
-<content_before>${content.before}</content_before>
-<content_after>${content.after}</content_after>
-${selectedText ? `<selected_text>${selectedText}</selected_text> Please update or replace the selected text based on the user’s instruction inside the <prompt> tags` : "The user is inserting new content at the cursor. Based on the surrounding context above, generate or modify text that fulfills this instruction inside the <prompt> tags."}
+<content_before_cursor>${content.before}</content_before_cursor>
+<content_after_cursor>${content.after}</content_after_cursor>
+${selectedText ? `<selected_text>${selectedText}</selected_text> You will be updating or replacing the selected_text based on the user's instruction` : "The user is inserting new content at the cursor."}
+Use the content before and after the cursor as context for your response.
+What the user is asking for may not be directly related to the content before and after the cursor, so use your best judgment to provide a helpful response.
+Do not repeat the existing content before and after the cursor unless it is necessary to complete the thought.
 Keep the response concise, relevant, and formatted consistently with the surrounding content.`
       },
       {
         role: "user",
-        content: `<prompt>${prompt}</prompt>`
+        content: `The Task: ${prompt}`
       }
     ];
 

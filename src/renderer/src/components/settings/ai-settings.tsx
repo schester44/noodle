@@ -28,6 +28,7 @@ import {
   FormLabel,
   FormMessage
 } from "../ui/form";
+import { cn } from "@/lib/utils";
 
 export function AISettings() {
   const [showApiKey, setShowApiKey] = useState(false);
@@ -47,8 +48,8 @@ export function AISettings() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>AI Features</CardTitle>
-          <CardDescription>Configure AI-powered features for your notes</CardDescription>
+          <CardTitle>AI Settings</CardTitle>
+          <CardDescription>Unleash AI to boost your workflow</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <FormField
@@ -106,7 +107,7 @@ export function AISettings() {
                   <FormLabel>Model</FormLabel>
                   <FormControl>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <SelectTrigger id={field.name}>
+                      <SelectTrigger id={field.name} className="w-full">
                         <SelectValue placeholder="Select model" />
                       </SelectTrigger>
                       <SelectContent>
@@ -128,6 +129,60 @@ export function AISettings() {
             Test API Connection
           </Button>
         </CardFooter>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Features</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <FormField
+            control={form.control}
+            name="ai.features.promptEnabled"
+            render={({ field }) => (
+              <FormItem
+                className={cn(
+                  "flex items-center justify-between",
+                  !aiEnabled && "opacity-50 pointer-events-none"
+                )}
+              >
+                <div>
+                  <FormLabel>Prompts</FormLabel>
+                  <FormDescription className="text-xs text-muted-foreground font-medium">
+                    Prompt AI to assist with your notes
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="ai.features.autoCompleteEnabled"
+            render={({ field }) => (
+              <FormItem
+                className={cn(
+                  "flex items-center justify-between",
+                  !aiEnabled && "opacity-50 pointer-events-none"
+                )}
+              >
+                <div>
+                  <FormLabel>Auto Completions</FormLabel>
+                  <FormDescription className="text-xs text-muted-foreground font-medium">
+                    Auto-complete sentences and paragraphs
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </CardContent>
       </Card>
     </div>
   );

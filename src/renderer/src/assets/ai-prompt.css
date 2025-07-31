@@ -1,0 +1,31 @@
+.ai-prompt-widget {
+  @apply inline-block absolute bg-[#1A1A22] border border-gray-800 rounded-sm shadow-lg z-50;
+}
+
+.ai-prompt-widget .ai-prompt-container {
+  @apply flex items-center gap-1 p-1;
+}
+
+.ai-prompt-widget .ai-prompt-input {
+  @apply p-1 border-none rounded-sm text-foreground text-sm outline-none resize leading-none shadow-indigo-400  focus:ring-offset-2 focus:ring-offset-background min-w-60;
+}
+
+.ai-prompt-widget .ai-prompt-loader {
+  @apply flex items-center gap-1 text-muted-foreground;
+}
+
+.ai-prompt-widget .ai-prompt-icon {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

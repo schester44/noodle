@@ -1,23 +1,23 @@
 import { EditorView, ViewPlugin, ViewUpdate } from "@codemirror/view";
-import { getNoteBlockFromPos } from "../block/utils";
+import { getNoteBlockFromPos } from "../../block/utils";
 import { Compartment } from "@codemirror/state";
 import {
   ghostTextExtension,
   setGhostTextEffect,
   setShouldTriggerEffect,
   shouldTriggerCompletionField
-} from "./ghost-text";
-import { logger } from "../../lib/logger";
-import { isInInsertMode } from "./vim";
+} from "../ghost-text";
+import { logger } from "../../../lib/logger";
+import { isInInsertMode } from "../vim";
 
 let abortController: AbortController | null = null;
 let debounceTimer: number | null = null;
 
-export const copilotCompartment = new Compartment();
+export const aiAutoCompletionCompartment = new Compartment();
 
-export function toggleCopilotExtension(view: EditorView, enabled: boolean) {
+export function toggleAutoCompletionExtension(view: EditorView, enabled: boolean) {
   view.dispatch({
-    effects: copilotCompartment.reconfigure(enabled ? aiExtension() : [])
+    effects: aiAutoCompletionCompartment.reconfigure(enabled ? aiAutoCompletionExtension() : [])
   });
 }
 
@@ -120,6 +120,6 @@ export const aiCompletionExtension = ViewPlugin.fromClass(
   }
 );
 
-export function aiExtension() {
+export function aiAutoCompletionExtension() {
   return [aiCompletionExtension, enableCompletionOnRealTyping, ghostTextExtension()];
 }

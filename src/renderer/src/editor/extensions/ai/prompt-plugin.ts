@@ -59,10 +59,11 @@ export class PromptPlugin {
   }
 
   private updateCursorVisibility() {
+    console.log("\x1b[33m%s\x1b[0m", "🪵 this.isPromptOpen", this.isPromptOpen);
     if (this.isPromptOpen) {
-      this.view.dom.classList.add("ai-prompt-active");
+      this.view.dom.classList.add("cm-prompt-active");
     } else {
-      this.view.dom.classList.remove("ai-prompt-active");
+      this.view.dom.classList.remove("cm-prompt-active");
     }
   }
   private insertResponse(response: string) {
@@ -144,6 +145,6 @@ export class PromptPlugin {
   destroy() {
     // Cleanup cursor visibility
     const editor = this.view.dom;
-    editor.classList.remove("ai-prompt-active");
+    editor.classList.remove("cm-prompt-active");
   }
 }
