@@ -62,6 +62,7 @@ export class PromptWidget extends WidgetType {
         outline: none;
         resize: vertical;
         line-height: 1;
+        box-shadow: 0 0 3px 2px rgba(147, 51, 234, 0.3);
       `;
 
       textarea.spellcheck = false;
