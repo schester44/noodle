@@ -22,6 +22,13 @@ const api: typeof window.api = {
   ai: {
     async getResponse(opts: { before: string; after: string; language: string }) {
       return ipcRenderer.invoke(IPC_CHANNELS.GET_AI_RESPONSE, opts);
+    },
+    async prompt(opts: {
+      content: { before: string; after: string };
+      selectedText: string;
+      prompt: string;
+    }) {
+      return ipcRenderer.invoke(IPC_CHANNELS.AI_PROMPT, opts);
     }
   },
   getFonts: async () => {

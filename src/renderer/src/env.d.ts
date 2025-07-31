@@ -14,6 +14,11 @@ declare global {
       checkForUpdates: () => Promise<void>;
       ai: {
         getResponse: (args: { before: string; after: string; language: string }) => Promise<string>;
+        prompt: (args: {
+          content: { before: string; after: string };
+          selectedText: string;
+          prompt: string;
+        }) => Promise<string>;
       };
       getFonts: () => Promise<string[]>;
       settings: {

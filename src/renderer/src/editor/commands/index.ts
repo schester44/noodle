@@ -10,6 +10,7 @@ import { toggleCheckbox } from "./vim/toggleCheckbox";
 import { gotoLastNote } from "./vim/gotoLastNote";
 import { createNewDailyNote } from "./editor/createNewDailyNote";
 import { createNewNote } from "./editor/createNewNote";
+import { startPrompt } from "./startPrompt";
 
 const cmd = (
   run: EditorCommand,
@@ -28,6 +29,7 @@ export const commands = {
   addNewBlockAtCursor: cmd(addNewBlockAtCursor, "Add New Block At Cursor"),
   newDailyNote: cmd(createNewDailyNote, "Create New Daily Note"),
   newNote: cmd(createNewNote, "Create New Note"),
+  startPrompt: cmd(startPrompt, "Start Prompt", ["normal", "insert"]),
   // this is a placeholder, we don't actually call this function. its handled by tinykeys in App.tsx
   // FIXME: Need an easy way to define commands that are not to be run by CodeMirror
   browseNotes: cmd(() => true, "Browse Notes")

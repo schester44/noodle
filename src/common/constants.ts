@@ -12,7 +12,8 @@ export const IPC_CHANNELS = {
   CHECK_FOR_UPDATES: "app:check-for-updates",
   GET_FILE_TREE: "buffer:get-file-tree",
   SEARCH_NOTES: "buffer:search-notes",
-  CLOSE_WINDOW: "app:close-window"
+  CLOSE_WINDOW: "app:close-window",
+  AI_PROMPT: "ai:prompt"
 } as const;
 
 export const NOTE_BLOCK_DELIMITER = "∞∞∞";

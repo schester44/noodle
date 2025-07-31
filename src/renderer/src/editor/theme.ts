@@ -31,6 +31,9 @@ export const darkTheme = EditorView.theme(
       textDecoration: "underline",
       cursor: "pointer"
     },
+    [`&.ai-prompt-active .cm-fat-cursor`]: {
+      display: "none !important"
+    },
     [`&.cm-meta-hover .${APPNAME}-link:hover`]: {
       color: darkPalette.orange
     },
@@ -184,6 +187,27 @@ export const baseTheme = EditorView.theme({
     fontSize: "12px",
     position: "absolute",
     right: "0px"
+  },
+  // FIXME: This should come from a theme compartment in the ai extension
+  ".ai-response-highlight": {
+    background: "transarent",
+    borderRadius: "2px",
+    animation: "aiResponseReveal .5s ease-out forwards"
+  },
+  "@keyframes aiResponseReveal": {
+    "0%": {
+      background: "rgba(126, 180, 201, 0.2)",
+      transform: "scale(1.02)"
+    },
+    "50%": {
+      background: "rgba(126, 180, 201, 0.1)",
+      transform: "scale(1.01)"
+    },
+    "100%": {
+      background: "transparent",
+      transform: "scale(1)",
+      boxShadow: "none"
+    }
   }
 });
 

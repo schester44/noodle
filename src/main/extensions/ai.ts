@@ -8,6 +8,47 @@ export function setupAIEventListeners({
 }) {
   const { apiKey, aiModel } = settings();
 
+  ipcMain.handle(IPC_CHANNELS.AI_PROMPT, async (_, { content, selectedText, prompt }) => {
+    const messages = [
+      {
+        role: "system",
+        content: `You are helping a user write or improve their notes. Here’s the current context:
+<content_before>${content.before}</content_before>
+<content_after>${content.after}</content_after>
+${selectedText ? `<selected_text>${selectedText}</selected_text> Please update or replace the selected text based on the user’s instruction inside the <prompt> tags` : "The user is inserting new content at the cursor. Based on the surrounding context above, generate or modify text that fulfills this instruction inside the <prompt> tags."}
+Keep the response concise, relevant, and formatted consistently with the surrounding content.`
+      },
+      {
+        role: "user",
+        content: `<prompt>${prompt}</prompt>`
+      }
+    ];
+
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: aiModel,
+        messages,
+        max_tokens: 4096,
+        temperature: 0.7,
+        stop: ["\n\n"]
+      })
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      console.error("OpenAI API error:", error);
+      return null;
+    }
+
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content?.trim() ?? null;
+  });
+
   ipcMain.handle(IPC_CHANNELS.GET_AI_RESPONSE, async (_, { before, after, language }) => {
     const messages = [
       {

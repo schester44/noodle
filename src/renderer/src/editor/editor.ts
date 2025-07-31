@@ -27,6 +27,7 @@ import { linksExtension } from "./extensions/links";
 import { markdown } from "@codemirror/lang-markdown";
 import { markdownExtensions } from "./extensions/markdown";
 import { getActiveNoteBlock, getBlockLineFromPos, getSelectionSize } from "./block/utils";
+import { inlinePrompting } from "./extensions/ai/inline-prompting";
 
 export class EditorInstance {
   note: NoteFormat | null = null;
@@ -98,6 +99,7 @@ export class EditorInstance {
         linksExtension(),
         markdown(),
         markdownExtensions(),
+        inlinePrompting(),
         keymap.of([
           {
             key: "Escape",
@@ -166,7 +168,6 @@ export class EditorInstance {
 
     const content = this.getContent();
 
-    console.log("\x1b[33m%s\x1b[0m", "🪵 this.diskContent", this.diskContent);
     if (content === this.diskContent) return;
     this.diskContent = content;
 
