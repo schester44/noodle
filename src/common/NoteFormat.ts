@@ -3,6 +3,7 @@ const FORMAT_VERSION = "1.0.0";
 type NoteMetadata = {
   name?: string;
   formatVersion: string;
+  folds?: Array<{ from: number; to: number }>;
   cursors?: {
     ranges: {
       from: number;

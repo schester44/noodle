@@ -1,5 +1,5 @@
 import { NoteFormat } from "@common/NoteFormat";
-import { ensureSyntaxTree, foldGutter, foldKeymap } from "@codemirror/language";
+import { ensureSyntaxTree, foldEffect, foldGutter, foldKeymap } from "@codemirror/language";
 import { Compartment, EditorSelection, EditorState, Transaction } from "@codemirror/state";
 import {
   drawSelection,
@@ -207,6 +207,12 @@ export class EditorInstance {
     this.name = name;
   }
 
+  storeFoldedRanges(folded: Array<{ from: number; to: number }>) {
+    if (!this.note) return;
+
+    this.note.metadata.folds = folded;
+  }
+
   setContent(content: string) {
     try {
       this.note = NoteFormat.load(content);
@@ -224,6 +230,16 @@ export class EditorInstance {
       },
       annotations: [editorEvent.of(SET_CONTENT), Transaction.addToHistory.of(false)]
     });
+
+    if (this.note.metadata.folds) {
+      this.note.metadata.folds.forEach((fold) => {
+        if (fold.from < fold.to) {
+          this.view.dispatch({
+            effects: foldEffect.of(fold)
+          });
+        }
+      });
+    }
 
     ensureSyntaxTree(this.view.state, this.view.state.doc.length, 5000);
 

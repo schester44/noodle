@@ -1,8 +1,11 @@
 import { getNoteBlockFromPos } from "../../block/utils";
 import { foldedRanges, foldEffect, unfoldEffect } from "@codemirror/language";
 import { EditorCommand } from "../types";
+import { EditorView } from "@codemirror/view";
+import { foldState } from "@codemirror/language";
+import { EditorState } from "@codemirror/state";
 
-export const toggleBlockFold: EditorCommand = ({ view }) => {
+export const toggleBlockFold: EditorCommand = ({ view, editor }) => {
   const { state, dispatch } = view;
   const pos = state.selection.main.head;
 
@@ -25,6 +28,18 @@ export const toggleBlockFold: EditorCommand = ({ view }) => {
       effects: isFolded ? unfoldEffect.of({ from, to }) : foldEffect.of({ from, to })
     });
   }
+
+  setTimeout(() => {
+    const folds = foldedRanges(view.state);
+
+    const folded: Array<{ from: number; to: number }> = [];
+
+    folds.between(0, view.state.doc.length, (from, to) => {
+      folded.push({ from, to });
+    });
+
+    editor?.storeFoldedRanges(folded);
+  }, 0);
 
   return true;
 };

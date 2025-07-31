@@ -19,6 +19,10 @@ export interface UserConfig {
     apiKey: string;
     enabled: boolean;
     model: string;
+    features: {
+      promptEnabled: boolean;
+      autoCompleteEnabled: boolean;
+    };
   };
   keyBindings: Record<string, string>;
 }
