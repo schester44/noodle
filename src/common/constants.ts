@@ -13,7 +13,8 @@ export const IPC_CHANNELS = {
   GET_FILE_TREE: "buffer:get-file-tree",
   SEARCH_NOTES: "buffer:search-notes",
   CLOSE_WINDOW: "app:close-window",
-  AI_PROMPT: "ai:prompt"
+  AI_PROMPT: "ai:prompt",
+  TEST_AI_CONNECTION: "ai:test-connection"
 } as const;
 
 export const NOTE_BLOCK_DELIMITER = "∞∞∞";

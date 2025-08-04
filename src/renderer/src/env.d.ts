@@ -13,6 +13,7 @@ declare global {
       searchNotes: (query: string) => Promise<ParsedSearchResult[]>;
       checkForUpdates: () => Promise<void>;
       ai: {
+        testConnection: () => Promise<{ status: "success" | "error"; message?: string }>;
         getResponse: (args: { before: string; after: string; language: string }) => Promise<string>;
         prompt: (args: {
           content: { before: string; after: string };

@@ -29,19 +29,29 @@ import {
   FormMessage
 } from "../ui/form";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export function AISettings() {
   const [showApiKey, setShowApiKey] = useState(false);
   const form = useFormContext<FormInputs>();
+  const [isLoading, setIsLoading] = useState(false);
 
   const aiEnabled = form.watch("ai.enabled");
 
   async function handleConnectionTest() {
-    // await window.api.ai.testConnection({
-    //   apiKey: form.getValues("ai.apiKey"),
-    //   model: form.getValues("ai.model")
-    // })
-    // Show toast
+    setIsLoading(true);
+    const res = await window.api.ai.testConnection();
+    console.log("🪵 res", res);
+
+    if (res.status === "error") {
+      toast.error("Connection test failed", { description: res.message });
+    } else {
+      toast.success("AI connection test successful!", {
+        description: "Your API key is valid and the connection is working."
+      });
+    }
+
+    setIsLoading(false);
   }
 
   return (
@@ -125,7 +135,12 @@ export function AISettings() {
         </CardContent>
 
         <CardFooter className={aiEnabled ? "" : "opacity-50 pointer-events-none"}>
-          <Button variant="outline" className="w-full" onClick={handleConnectionTest}>
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={handleConnectionTest}
+            disabled={isLoading}
+          >
             Test API Connection
           </Button>
         </CardFooter>

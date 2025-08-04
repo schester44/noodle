@@ -20,6 +20,9 @@ const api: typeof window.api = {
     return ipcRenderer.invoke(IPC_CHANNELS.GET_APP_CONFIG);
   },
   ai: {
+    testConnection: () => {
+      return ipcRenderer.invoke(IPC_CHANNELS.TEST_AI_CONNECTION);
+    },
     async getResponse(opts: { before: string; after: string; language: string }) {
       return ipcRenderer.invoke(IPC_CHANNELS.GET_AI_RESPONSE, opts);
     },

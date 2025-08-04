@@ -6,9 +6,43 @@ export function setupAIEventListeners({
 }: {
   settings: () => { apiKey: string; aiModel: string };
 }) {
-  const { apiKey, aiModel } = settings();
+  ipcMain.handle(IPC_CHANNELS.TEST_AI_CONNECTION, async () => {
+    {
+      const { apiKey, aiModel } = settings();
+      const messages = [
+        {
+          role: "user",
+          content: `Hello! Can you tell me a joke?`
+        }
+      ];
+
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: aiModel,
+          messages,
+          max_tokens: 5,
+          temperature: 0.7,
+          stop: ["\n\n"]
+        })
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        console.error("OpenAI API error:", error);
+        return { status: "error", message: error.message || "Failed to connect to AI service" };
+      }
+
+      return { status: "success" };
+    }
+  });
 
   ipcMain.handle(IPC_CHANNELS.AI_PROMPT, async (_, { content, selectedText, prompt }) => {
+    const { apiKey, aiModel } = settings();
     const messages = [
       {
         role: "system",
@@ -53,6 +87,8 @@ Keep the response concise, relevant, and formatted consistently with the surroun
   });
 
   ipcMain.handle(IPC_CHANNELS.GET_AI_RESPONSE, async (_, { before, after, language }) => {
+    const { apiKey, aiModel } = settings();
+
     const messages = [
       {
         role: "system",

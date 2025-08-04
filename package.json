@@ -61,6 +61,7 @@
     "lucide-react": "^0.510.0",
     "mathjs": "^14.4.0",
     "react-hook-form": "^7.56.3",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.0",
     "tailwindcss": "^4.1.6",
     "tinykeys": "^3.0.0",

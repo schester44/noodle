@@ -9,6 +9,7 @@ import { useNoteStore } from "./stores/note-store";
 import { cmToTinyKeys } from "./lib/utils";
 import { SearchOverlay } from "./components/search-overlay";
 import { ParsedSearchResult } from "src/main/search";
+import { Toaster } from "./components/ui/sonner";
 
 function App(): React.JSX.Element {
   const [loaded, setLoaded] = useState(false);
@@ -95,6 +96,7 @@ function App(): React.JSX.Element {
           <Editor />
         </div>
       </div>
+      <Toaster />
     </ThemeProvider>
   );
 }
