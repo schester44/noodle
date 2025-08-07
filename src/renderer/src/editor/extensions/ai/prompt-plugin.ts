@@ -2,6 +2,7 @@ import { Decoration, DecorationSet, EditorView, ViewUpdate } from "@codemirror/v
 import { Range } from "@codemirror/state";
 import { PromptWidget } from "./prompt-widget";
 import { getActiveNoteBlock } from "@/editor/block/utils";
+import { setAIPromptOpenEffect } from "../ghost-text";
 
 export class PromptPlugin {
   decorations: DecorationSet = Decoration.none;
@@ -21,6 +22,11 @@ export class PromptPlugin {
     this.isPromptOpen = true;
     this.updateDecorations();
     this.updateCursorVisibility();
+    
+    // Update ghost text state
+    this.view.dispatch({
+      effects: [setAIPromptOpenEffect.of(true)]
+    });
   }
 
   hidePrompt() {
@@ -29,7 +35,12 @@ export class PromptPlugin {
     this.selectedText = "";
     this.isPromptOpen = false;
     this.updateCursorVisibility();
-    this.view.dispatch({});
+    
+    // Update ghost text state
+    this.view.dispatch({
+      effects: [setAIPromptOpenEffect.of(false)]
+    });
+    
     this.view.focus();
   }
 

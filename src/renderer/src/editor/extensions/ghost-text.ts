@@ -2,6 +2,18 @@ import { StateField, StateEffect, RangeSetBuilder } from "@codemirror/state";
 import { Decoration, DecorationSet, EditorView, WidgetType, keymap } from "@codemirror/view";
 import { isInInsertMode } from "./vim";
 
+export const setAIPromptOpenEffect = StateEffect.define<boolean>();
+
+export const aiPromptOpenField = StateField.define<boolean>({
+  create: () => false,
+  update(value, tr) {
+    for (const e of tr.effects) {
+      if (e.is(setAIPromptOpenEffect)) return e.value;
+    }
+    return value;
+  }
+});
+
 export const setGhostTextEffect = StateEffect.define<string>();
 
 export const setShouldTriggerEffect = StateEffect.define<boolean>();
@@ -46,6 +58,10 @@ const ghostTextField = StateField.define<DecorationSet>({
       const pos = tr.state.selection.main.head;
 
       if (!isInInsertMode(tr.state)) return Decoration.none;
+      
+      // Hide ghost text when AI prompt is open
+      const isAIPromptOpen = tr.state.field(aiPromptOpenField);
+      if (isAIPromptOpen) return Decoration.none;
 
       builder.add(pos, pos, ghostDecoration(text));
       return builder.finish();
@@ -125,6 +141,7 @@ export function ghostTextExtension() {
     ghostTextValueField,
     acceptGhostTextKeymap,
     shouldTriggerCompletionField,
-    clearGhostTextOnEscape
+    clearGhostTextOnEscape,
+    aiPromptOpenField
   ];
 }
