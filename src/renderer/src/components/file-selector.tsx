@@ -32,10 +32,22 @@ export function FileSelector({
     { fullpath: string; path: string; file: string; name: string; tags: string[] }[]
   >([]);
 
-  useEffect(() => {
+  const refreshFiles = () => {
     window.api.buffer.getAll().then((files) => {
       setFiles(files);
     });
+  };
+
+  useEffect(() => {
+    refreshFiles();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = window.api.buffer.onFileListChanged(() => {
+      refreshFiles();
+    });
+
+    return unsubscribe;
   }, []);
 
   useEffect(() => {

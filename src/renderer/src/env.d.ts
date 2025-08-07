@@ -41,6 +41,7 @@ declare global {
           Array<{ fullpath: string; path: string; file: string; name: string; tags: string[] }>
         >;
         getFileTree: () => Promise<FileTreeItem>;
+        onFileListChanged: (callback: () => void) => () => void;
       };
     };
   }

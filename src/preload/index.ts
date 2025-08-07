@@ -65,6 +65,11 @@ const api: typeof window.api = {
     },
     async getFileTree() {
       return await ipcRenderer.invoke(IPC_CHANNELS.GET_FILE_TREE);
+    },
+    onFileListChanged(callback: () => void) {
+      const handler = () => callback();
+      ipcRenderer.on("file-list-changed", handler);
+      return () => ipcRenderer.removeListener("file-list-changed", handler);
     }
   }
 };

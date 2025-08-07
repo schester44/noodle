@@ -3,6 +3,7 @@ import fsp from "fs/promises";
 import { join, basename, extname } from "path";
 import os from "node:os";
 import { ipcMain } from "electron";
+import chokidar from "chokidar";
 import { store } from "./store/app-config";
 import { IPC_CHANNELS, NOTE_BLOCK_DELIMITER } from "@common/constants";
 
@@ -45,20 +46,61 @@ ${NOTE_BLOCK_DELIMITER}markdown-a
 export class FileLibrary {
   private basePath: string;
   private files: Record<string, NoteBuffer> = {};
+  private watcher: chokidar.FSWatcher | null = null;
+  private onFileSystemChange?: () => void;
 
-  constructor(basePath: string) {
-    basePath = untildify(basePath);
+  constructor(options: { libraryPath: string; onFileSystemChange?: () => void }) {
+    const basePath = untildify(options.libraryPath);
 
     if (!isDirectory(basePath)) {
       fs.mkdirSync(basePath, { recursive: true });
     }
 
     this.basePath = fs.realpathSync(basePath);
+    this.onFileSystemChange = options.onFileSystemChange;
 
     const defaultFilePath = join(this.basePath, DEFAULT_FILE_NAME);
 
     if (!fileExists(join(this.basePath, DEFAULT_FILE_NAME))) {
       fs.writeFileSync(defaultFilePath, initialContent(DEFAULT_FILE_NAME), "utf8");
+    }
+
+    if (options.onFileSystemChange) {
+      this.setupFileWatcher();
+    }
+  }
+
+  private setupFileWatcher() {
+    console.log("\x1b[33m%s\x1b[0m", "🪵 this.basePath", this.basePath);
+
+    this.watcher = chokidar.watch("*.txt", {
+      cwd: this.basePath,
+      persistent: true,
+      ignoreInitial: true,
+      depth: 10
+    });
+
+    this.watcher
+      .on("add", (path: string) => {
+        console.log(`File added: ${path}`);
+        this.onFileSystemChange?.();
+      })
+      .on("unlink", (path: string) => {
+        console.log(`File removed: ${path}`);
+        const fullPath = join(this.basePath, path);
+        delete this.files[fullPath];
+        this.onFileSystemChange?.();
+      })
+      .on("change", (path: string) => {
+        console.log(`File changed: ${path}`);
+        this.onFileSystemChange?.();
+      });
+  }
+
+  destroy() {
+    if (this.watcher) {
+      this.watcher.close();
+      this.watcher = null;
     }
   }
 

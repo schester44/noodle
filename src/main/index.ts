@@ -74,7 +74,13 @@ async function init() {
 
   const libraryPath = getLibraryPath(userConfig.get("libraryPath"));
 
-  const fileLibrary = new FileLibrary(libraryPath);
+  const fileLibrary = new FileLibrary({
+    libraryPath,
+    onFileSystemChange: () => {
+      console.log("File system change detected, notifying renderer");
+      notesWindow.webContents.send("file-list-changed");
+    }
+  });
 
   let apiKey = userConfig.get("ai.apiKey", "");
   let aiModel = userConfig.get("ai.model", "");
@@ -108,6 +114,10 @@ async function init() {
       apiKey,
       aiModel
     })
+  });
+
+  app.on("before-quit", () => {
+    fileLibrary.destroy();
   });
 
   ipcMain.handle(IPC_CHANNELS.GET_APP_VERSION, async () => {
