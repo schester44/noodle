@@ -8,7 +8,13 @@ import {
   ViewUpdate,
   WidgetType
 } from "@codemirror/view";
-import { EditorSelection, Prec, RangeSetBuilder, Transaction, EditorState } from "@codemirror/state";
+import {
+  EditorSelection,
+  Prec,
+  RangeSetBuilder,
+  Transaction,
+  EditorState
+} from "@codemirror/state";
 import { darkPalette } from "@/editor/base-theme";
 import { getActiveNoteBlock } from "@/editor/block/utils";
 import { isInInsertMode } from "@/editor/extensions/vim";
@@ -263,40 +269,36 @@ const deleteCheckboxOnBackspaceHandler = {
 };
 
 // Get checkbox ranges from the current state
-function getCheckboxRanges(state: any): Array<{from: number, to: number, textStart: number}> {
-  const ranges: Array<{from: number, to: number, textStart: number}> = [];
-  
+function getCheckboxRanges(
+  state: EditorState
+): Array<{ from: number; to: number; textStart: number }> {
+  const ranges: Array<{ from: number; to: number; textStart: number }> = [];
+
   syntaxTree(state).iterate({
     from: 0,
     to: state.doc.length,
     enter: (node) => {
       if (node.name === "TaskMarker") {
         const line = state.doc.lineAt(node.from);
-        const lineText = line.text;
-        
-        // Check for severity modifiers at the beginning of the line
-        const severityRegex = /^\s*!(h|m|l)\s+/;
-        const severityMatch = lineText.match(severityRegex);
-        const severityLength = severityMatch ? severityMatch[0].length : 0;
-        
+
         // Check for priority after the checkbox
         const possibleSeverity = state.doc.sliceString(node.to, node.to + 6);
         const checkboxPriorityRegex = /!(h(?![a-zA-Z])|m(?![a-zA-Z])|l(?![a-zA-Z])) /g;
         const priorityMatch = possibleSeverity.match(checkboxPriorityRegex);
         const priorityLength = priorityMatch ? priorityMatch[0].length : 0;
-        
+
         // Start from line beginning including any severity modifiers
         const checkboxFrom = line.from;
         // End after the checkbox and any priority markers, plus one space
         const checkboxTo = node.to + priorityLength + 1;
         // Text starts right after the checkbox range
         const textStart = checkboxTo;
-        
+
         ranges.push({ from: checkboxFrom, to: checkboxTo, textStart });
       }
     }
   });
-  
+
   return ranges;
 }
 
@@ -305,7 +307,7 @@ const vimCheckboxAtomicFilter = EditorState.transactionFilter.of((tr: Transactio
   // Only apply when entering normal mode or when already in normal mode
   const wasInInsertMode = isInInsertMode(tr.startState);
   const isInNormalMode = !isInInsertMode(tr.state);
-  
+
   // Skip if staying in insert mode
   if (!isInNormalMode) {
     return tr;
@@ -314,7 +316,7 @@ const vimCheckboxAtomicFilter = EditorState.transactionFilter.of((tr: Transactio
   // Check if we have a selection change or we're transitioning from insert to normal mode
   const hasSelectionChange = tr.selection && !tr.selection.eq(tr.startState.selection);
   const isModeTransition = wasInInsertMode && isInNormalMode;
-  
+
   if (!hasSelectionChange && !isModeTransition) {
     return tr;
   }
@@ -328,9 +330,9 @@ const vimCheckboxAtomicFilter = EditorState.transactionFilter.of((tr: Transactio
 
   const newSelection = tr.selection || tr.startState.selection;
   let needsAdjustment = false;
-  const adjustedRanges = newSelection.ranges.map(range => {
+  const adjustedRanges = newSelection.ranges.map((range) => {
     const pos = range.head;
-    
+
     // Check if cursor is trying to move into any checkbox range
     for (const checkboxRange of checkboxRanges) {
       // If cursor is anywhere within the checkbox range (including at the very beginning)
@@ -340,14 +342,14 @@ const vimCheckboxAtomicFilter = EditorState.transactionFilter.of((tr: Transactio
         return EditorSelection.range(checkboxRange.textStart, checkboxRange.textStart);
       }
     }
-    
+
     return range;
   });
 
   if (needsAdjustment) {
     return [tr, { selection: EditorSelection.create(adjustedRanges) }];
   }
-  
+
   return tr;
 });
 
