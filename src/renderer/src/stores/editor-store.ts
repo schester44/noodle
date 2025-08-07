@@ -33,7 +33,7 @@ export const useEditorStore = create<EditorStore>((set) => ({
             actions: { updateCurrentNote: noteStore.updateCurrentNote },
             ai: appStore.userSettings.ai,
             isVIMEnabled: appStore.userSettings.vim,
-            prevousFilePath: null,
+            prevousFilePath: path !== draft.activeEditor ? draft.activeEditor : null,
             initialKeyBindings: appStore.userSettings.keyBindings,
             initialTheme: {
               theme: appStore.userSettings.theme,
